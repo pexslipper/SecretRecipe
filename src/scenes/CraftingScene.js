@@ -1,0 +1,596 @@
+import Phaser from 'phaser';
+import { RecipeEngine } from '../engine/RecipeEngine.js';
+import { buildCookbook } from '../engine/Cookbook.js';
+import { combinationHints } from '../engine/Hints.js';
+import recipesData from '../data/recipes.json';
+import itemsData from '../data/items.json';
+import { STARTING_ITEMS, REUSABLE_TYPES } from '../data/start.js';
+import { ItemToken, TOKEN_RADIUS } from '../ui/ItemToken.js';
+import { Sidebar } from '../ui/Sidebar.js';
+import { StorageDrawer } from '../ui/StorageDrawer.js';
+import { CookbookModal } from '../ui/CookbookModal.js';
+import { HintCard } from '../ui/HintCard.js';
+import { drawKitchen, drawPlank } from '../ui/KitchenBackdrop.js';
+import { makeRibbonButton, makeRoundButton } from '../ui/Buttons.js';
+import { COLORS, textStyle } from '../ui/theme.js';
+import { layoutFor } from '../ui/layout.js';
+import { loadToolsOpen } from '../ui/storageShared.js';
+
+const SAVE_KEY = 'secret-recipe-save-v1';
+const WORKSPACE_REGISTRY_KEY = 'workspace-tokens';
+const COMBINE_DISTANCE = TOKEN_RADIUS * 1.6;
+const DOUBLE_CLICK_MS = 300;
+
+// Depth bands: workspace tokens count up from 1, the hint card and storage panel sit above them,
+// and the token being dragged sits above everything.
+const HINT_DEPTH = 900_000;
+const STORAGE_DEPTH = 1_000_000;
+const HUD_DEPTH = 1_000_000;
+const DRAG_DEPTH = 2_000_000;
+const FX_DEPTH = 3_000_000;
+const MODAL_DEPTH = 4_000_000;
+
+export class CraftingScene extends Phaser.Scene {
+  constructor() {
+    super('CraftingScene');
+  }
+
+  init() {
+    this.workspaceTokens = new Set();
+    this.dragging = null;
+    this.skipWorkspaceSave = false;
+    this.hintMode = false;
+    this.hintCardFresh = false;
+    this.zCounter = 1;
+    this.loadProgress();
+  }
+
+  create() {
+    this.engine = new RecipeEngine(recipesData);
+    this.itemsById = new Map(itemsData.map((item) => [item.id, item]));
+    this.layout = layoutFor(this.scale.width, this.scale.height, { toolsOpen: loadToolsOpen() });
+    this.ws = this.layout.workspace;
+
+    this.setupUI();
+    this.setupInput();
+    this.restoreWorkspace();
+    this.watchResize();
+  }
+
+  // ---------------------------------------------------------------- Layout changes
+
+  /** Lay the screen out again when the game size changes (window resize / device rotation). */
+  watchResize() {
+    const onResize = (gameSize) => {
+      if (gameSize.width !== this.layout.width || gameSize.height !== this.layout.height) this.relayout();
+    };
+    this.scale.on('resize', onResize);
+    this.events.once('shutdown', () => {
+      this.scale.off('resize', onResize);
+      if (!this.skipWorkspaceSave) this.saveWorkspace();
+    });
+  }
+
+  relayout() {
+    this.scene.restart();
+  }
+
+  /** Remembers table items as fractions of the workspace so they land in the same place after a relayout. */
+  saveWorkspace() {
+    const tokens = [...this.workspaceTokens].map((t) => ({
+      id: t.itemId,
+      fx: (t.x - this.ws.x) / this.ws.w,
+      fy: (t.y - this.ws.y) / this.ws.h,
+    }));
+    this.registry.set(WORKSPACE_REGISTRY_KEY, tokens);
+  }
+
+  restoreWorkspace() {
+    const saved = this.registry.get(WORKSPACE_REGISTRY_KEY) ?? [];
+    this.registry.remove(WORKSPACE_REGISTRY_KEY);
+    for (const { id, fx, fy } of saved) {
+      if (!this.itemsById.has(id) || !this.unlockedIngredients.has(id)) continue;
+      const { x, y } = this.clampToWorkspace(this.ws.x + fx * this.ws.w, this.ws.y + fy * this.ws.h);
+      this.spawnWorkspaceToken(id, x, y);
+    }
+  }
+
+  // ---------------------------------------------------------------- UI
+
+  setupUI() {
+    const { hud: hudRect, storage } = this.layout;
+
+    const board = drawKitchen(this, this.ws);
+    const touch = this.sys.game.device.input.touch;
+    this.hint = this.add
+      .text(board.x, board.y, `${touch ? 'Tap or drag' : 'Drag'} ingredients here,\nthen drop one onto another to cook`, {
+        ...textStyle(Math.round(21 * Math.max(0.75, board.scale)), 500, COLORS.chalk),
+        align: 'center',
+        lineSpacing: 6,
+        wordWrap: { width: board.width * 0.9 },
+      })
+      .setOrigin(0.5)
+      .setAlpha(0.92);
+
+    // Top bar sits above workspace tokens so dragged items slide under it.
+    const midY = hudRect.y + hudRect.h / 2;
+    const hud = [drawPlank(this, hudRect.x, hudRect.y, hudRect.w - 2, hudRect.h)];
+    // Recipes ribbon doubles as the progress counter: dishes served so far / all dishes.
+    this.recipesButton = makeRibbonButton(this, hudRect.x + 14, midY - 28, 'Recipes', () => {
+      this.exitHintMode();
+      this.hintCard.hide();
+      this.cookbook.open();
+    });
+    hud.push(this.recipesButton);
+    // Hint: click it, then click an item to see how many of its combinations are left.
+    this.hintButton = makeRoundButton(this, 0, midY + 2, 32, 'Hint', {
+      color: 0xf2c44f,
+      darkColor: 0xc9952e,
+      onClick: () => this.toggleHintMode(),
+    });
+    hud.push(this.hintButton);
+    const right = hudRect.x + hudRect.w;
+    hud.push(
+      makeRoundButton(this, right - 152, midY + 2, 36, 'Reset', {
+        color: 0x72bdbd,
+        darkColor: 0x4f9799,
+        onClick: () => this.resetProgress(),
+      }),
+    );
+    hud.push(
+      makeRoundButton(this, right - 58, midY + 2, 36, 'Clear', {
+        color: 0xec7d7e,
+        darkColor: 0xc65a5c,
+        onClick: () => this.clearWorkspace(),
+      }),
+    );
+    hud.forEach((o) => o.setDepth(HUD_DEPTH));
+
+    const cookbook = buildCookbook(recipesData, this.engine);
+    this.dishIds = new Set(cookbook.map((entry) => entry.dishId));
+    this.cookbook = new CookbookModal(this, {
+      cookbook,
+      itemsById: this.itemsById,
+      depth: MODAL_DEPTH,
+      isRecipeDiscovered: (id) => this.discoveredRecipes.has(id),
+      isDishServed: (id) => this.servedDishes.has(id),
+    });
+
+    this.hintCard = new HintCard(this, {
+      rect: this.ws,
+      depth: HINT_DEPTH,
+      itemsById: this.itemsById,
+      getHints: (id) => combinationHints(id, recipesData, this.itemsById, (rid) => this.discoveredRecipes.has(rid)),
+    });
+
+    const storageOptions = {
+      rect: storage.rect,
+      itemsById: this.itemsById,
+      depth: STORAGE_DEPTH,
+      onPick: (id, pointer) => {
+        const token = this.spawnWorkspaceToken(id, pointer.x, pointer.y);
+        this.startDrag(token, pointer);
+      },
+      onTap: (id) => this.placeFromStorage(id),
+      onToggleTools: () => this.relayout(),
+      interceptPress: (id) => this.useHintOn(id),
+    };
+    this.storage = storage.kind === 'drawer' ? new StorageDrawer(this, storageOptions) : new Sidebar(this, storageOptions);
+    this.storage.refresh(this.unlockedIngredients);
+
+    this.updateHud();
+  }
+
+  updateHud() {
+    const found = [...this.dishIds].filter((id) => this.servedDishes.has(id)).length;
+    this.recipesButton.setLabel(`Recipes ${found}/${this.dishIds.size}`);
+    this.hintButton.setX(this.recipesButton.x + this.recipesButton.ribbonWidth + 42);
+    this.hint.setVisible(this.workspaceTokens.size === 0);
+  }
+
+  /** Tap on a storage item: drop a copy on the table near the middle, in a free spot. */
+  placeFromStorage(itemId) {
+    const centre = this.clampToWorkspace(this.ws.x + this.ws.w / 2, this.ws.y + this.ws.h * 0.55);
+    const minGap = TOKEN_RADIUS * 2.4;
+    const free = [...this.workspaceTokens].every(
+      (t) => Phaser.Math.Distance.Between(t.x, t.y, centre.x, centre.y) >= minGap,
+    );
+    const spot = free ? centre : this.findFreeSpot(centre, null, []);
+    const token = this.spawnWorkspaceToken(itemId, spot.x, spot.y);
+    token.setScale(0);
+    this.tweens.add({ targets: token, scale: 1, duration: 250, ease: 'Back.easeOut' });
+  }
+
+  // ---------------------------------------------------------------- Hints
+
+  toggleHintMode() {
+    if (this.hintMode) {
+      this.exitHintMode();
+      this.hintCard.hide();
+      return;
+    }
+    this.hintMode = true;
+    this.hintCardFresh = true; // don't let this same click close the prompt
+    const verb = this.sys.game.device.input.touch ? 'Tap' : 'Click';
+    this.hintCard.showMessage(`💡 ${verb} an item to see its hints`);
+    this.hintPulse = this.tweens.add({ targets: this.hintButton, scale: 1.12, duration: 420, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+  }
+
+  exitHintMode() {
+    if (!this.hintMode) return;
+    this.hintMode = false;
+    this.hintPulse?.remove();
+    this.hintPulse = null;
+    this.hintButton.setScale(1);
+  }
+
+  /** While hint mode is on, a press on any item shows its hints instead of picking it up. */
+  useHintOn(itemId) {
+    if (!this.hintMode) return false;
+    this.exitHintMode();
+    this.hintCardFresh = true;
+    this.hintCard.show(itemId, { autoHideMs: 5000 });
+    return true;
+  }
+
+  // ---------------------------------------------------------------- Workspace & dragging
+
+  setupInput() {
+    this.input.on('pointermove', (pointer) => {
+      if (!this.dragging) return;
+      this.dragging.token.setPosition(pointer.x - this.dragging.offsetX, pointer.y - this.dragging.offsetY);
+    });
+    this.input.on('pointerup', () => this.endDrag());
+    this.input.on('pointerupoutside', () => this.endDrag());
+
+    // Any later click dismisses a hint card (but not the click that just opened it).
+    this.input.on('pointerdown', () => {
+      if (this.hintCardFresh) {
+        this.hintCardFresh = false;
+        return;
+      }
+      if (!this.hintMode && this.hintCard.visible) this.hintCard.hide();
+    });
+
+    this.input.on('wheel', (pointer, _over, _dx, dy) => {
+      if (dy === 0) return;
+      if (this.cookbook.isOpen) this.cookbook.wheel(dy);
+      else if (this.storage.contains(pointer.x, pointer.y)) this.storage.wheel(pointer, dy);
+    });
+
+    this.input.keyboard.on('keydown-ESC', () => {
+      if (this.cookbook.isOpen) this.cookbook.close();
+      else if (this.hintMode) {
+        this.exitHintMode();
+        this.hintCard.hide();
+      } else this.scene.start('MainMenu');
+    });
+  }
+
+  spawnWorkspaceToken(itemId, x, y) {
+    const token = new ItemToken(this, x, y, this.itemsById.get(itemId)).setDepth(this.zCounter++);
+    token.hit.on('pointerdown', (pointer) => {
+      if (this.useHintOn(token.itemId)) return;
+      if (pointer.downTime - token.lastDownTime < DOUBLE_CLICK_MS) {
+        token.lastDownTime = 0;
+        this.duplicateToken(token);
+        return;
+      }
+      token.lastDownTime = pointer.downTime;
+      this.startDrag(token, pointer);
+    });
+    this.workspaceTokens.add(token);
+    this.updateHud();
+    return token;
+  }
+
+  duplicateToken(token) {
+    const copy = this.spawnWorkspaceToken(token.itemId, token.x, token.y);
+    const { x, y } = this.clampToWorkspace(token.x + 40, token.y + 40);
+    this.tweens.add({ targets: copy, x, y, duration: 150, ease: 'Quad.easeOut' });
+  }
+
+  startDrag(token, pointer) {
+    this.dragging = { token, offsetX: pointer.x - token.x, offsetY: pointer.y - token.y };
+    token.setDepth(DRAG_DEPTH);
+  }
+
+  endDrag() {
+    if (!this.dragging) return;
+    const { token } = this.dragging;
+    this.dragging = null;
+    token.setDepth(this.zCounter++);
+
+    // Dropping back on the storage panel removes the copy.
+    if (this.storage.contains(token.x, token.y)) {
+      this.removeToken(token, true);
+      return;
+    }
+
+    const target = this.findDropTarget(token);
+    if (target) {
+      this.onCombineTriggered(token, target);
+    } else {
+      const { x, y } = this.clampToWorkspace(token.x, token.y);
+      token.setPosition(x, y);
+    }
+  }
+
+  findDropTarget(token) {
+    let best = null;
+    let bestDist = COMBINE_DISTANCE;
+    for (const other of this.workspaceTokens) {
+      if (other === token) continue;
+      const d = Phaser.Math.Distance.Between(token.x, token.y, other.x, other.y);
+      if (d < bestDist) {
+        best = other;
+        bestDist = d;
+      }
+    }
+    return best;
+  }
+
+  clampToWorkspace(x, y) {
+    const { x: wx, y: wy, w, h } = this.ws;
+    return {
+      x: Phaser.Math.Clamp(x, wx + TOKEN_RADIUS + 4, wx + w - TOKEN_RADIUS - 4),
+      y: Phaser.Math.Clamp(y, wy + TOKEN_RADIUS + 4, wy + h - TOKEN_RADIUS - 24),
+    };
+  }
+
+  removeToken(token, animate = false) {
+    this.workspaceTokens.delete(token);
+    if (this.dragging?.token === token) this.dragging = null;
+    if (animate) {
+      token.setInputEnabled(false);
+      this.tweens.add({ targets: token, scale: 0, alpha: 0, duration: 150, onComplete: () => token.destroy() });
+    } else {
+      token.destroy();
+    }
+    this.updateHud();
+  }
+
+  clearWorkspace() {
+    for (const token of [...this.workspaceTokens]) this.removeToken(token, true);
+  }
+
+  // ---------------------------------------------------------------- Crafting
+
+  /**
+   * Called when `dropped` is released on top of `target`.
+   */
+  onCombineTriggered(dropped, target) {
+    const result = this.engine.combine(dropped.itemId, target.itemId);
+    const at = this.clampToWorkspace(target.x, target.y);
+
+    // Not a recipe: nothing is used up, both items stay on the table.
+    if (!result.success) {
+      this.rejectCombination(dropped, target);
+      return;
+    }
+
+    this.discoveredRecipes.add(result.recipeId);
+    if (result.action === 'ADD_TO_INGREDIENTS') {
+      const isNew = !this.unlockedIngredients.has(result.output);
+      this.unlockedIngredients.add(result.output);
+      this.spawnResult(result.output, at);
+      if (isNew) this.animateToIngredientTab(result.output, at);
+    } else if (result.action === 'DISAPPEAR_SERVED') {
+      this.animateServeAndDisappear(result.output, at);
+    }
+
+    this.clearSlotsAfterCrafting([dropped, target], result.consumed, at);
+    this.saveProgress();
+  }
+
+  spawnResult(itemId, at) {
+    const token = this.spawnWorkspaceToken(itemId, at.x, at.y);
+    token.setScale(0);
+    this.tweens.add({ targets: token, scale: 1, duration: 300, ease: 'Back.easeOut' });
+    return token;
+  }
+
+  animateToIngredientTab(itemId, from) {
+    this.storage.refresh(this.unlockedIngredients);
+    const target = this.storage.revealEntry(itemId);
+
+    const ghost = new ItemToken(this, from.x, from.y, this.itemsById.get(itemId)).setDepth(FX_DEPTH);
+    ghost.setInputEnabled(false);
+    this.tweens.add({
+      targets: ghost,
+      x: target.x,
+      y: target.y,
+      scale: { from: 1.3, to: 0.8 },
+      duration: 650,
+      ease: 'Cubic.easeInOut',
+      onComplete: () => {
+        ghost.destroy();
+        this.storage.flashNew(itemId);
+      },
+    });
+
+    this.floatText(from.x, from.y - 60, `New: ${this.itemsById.get(itemId).name}!`, '#3f86c4');
+  }
+
+  animateServeAndDisappear(itemId, at) {
+    const dish = new ItemToken(this, at.x, at.y, this.itemsById.get(itemId)).setDepth(FX_DEPTH);
+    dish.setInputEnabled(false).setScale(0);
+
+    this.tweens.chain({
+      targets: dish,
+      tweens: [
+        { scale: 1.5, duration: 300, ease: 'Back.easeOut' },
+        { y: at.y - 120, alpha: 0, scale: 1, delay: 500, duration: 600, ease: 'Quad.easeIn' },
+      ],
+      onComplete: () => dish.destroy(),
+    });
+    this.burst(at, [0xf2c230, 0xffffff, 0xff9f43], 14);
+
+    const isFirstServe = !this.servedDishes.has(itemId);
+    this.servedDishes.add(itemId);
+    this.updateHud();
+
+    const name = this.itemsById.get(itemId).name;
+    this.floatText(at.x, at.y - 70, `${name} served!`, '#d08a18');
+    if (isFirstServe) {
+      this.floatText(at.x, at.y - 100, 'New recipe found!', '#5a9a3c', 200);
+      // Draw the eye to the counter that just went up.
+      this.tweens.add({ targets: this.recipesButton, scale: 1.12, duration: 160, yoyo: true, repeat: 1, delay: 300 });
+    }
+  }
+
+  /** Two items that don't make anything: both wiggle "no", and the dropped one bounces off to a free spot. */
+  rejectCombination(dropped, target) {
+    for (const token of [dropped, target]) {
+      this.tweens.killTweensOf(token);
+      token.setAngle(0).setScale(1);
+      this.tweens.add({
+        targets: token,
+        angle: { from: -10, to: 10 },
+        duration: 60,
+        yoyo: true,
+        repeat: 2,
+        onComplete: () => token.setAngle(0),
+      });
+    }
+
+    const spot = this.findFreeSpot({ x: target.x, y: target.y }, dropped, []);
+    this.tweens.add({ targets: dropped, x: spot.x, y: spot.y, duration: 260, ease: 'Back.easeOut' });
+    this.floatText(target.x, target.y - 70, "Doesn't go together!", '#a0522d');
+  }
+
+  /**
+   * Removes consumed copies from the workspace. Tools and stations always stay,
+   * and are nudged aside so they don't sit under the result.
+   */
+  clearSlotsAfterCrafting(tokens, consumedList = [], at) {
+    const remaining = [...consumedList];
+    const kept = [];
+
+    for (const token of tokens) {
+      const reusable = REUSABLE_TYPES.has(token.item.type);
+      const idx = remaining.indexOf(token.itemId);
+      if (!reusable && idx !== -1) {
+        remaining.splice(idx, 1);
+        this.removeToken(token);
+      } else {
+        kept.push(token);
+      }
+    }
+
+    const placed = [];
+    for (const token of kept) {
+      const spot = this.findFreeSpot(at, token, placed);
+      placed.push(spot);
+      this.tweens.add({ targets: token, x: spot.x, y: spot.y, duration: 200, ease: 'Quad.easeOut' });
+    }
+  }
+
+  /** Finds a position near `at` that doesn't overlap other workspace tokens or the result at `at`. */
+  findFreeSpot(at, self, reserved) {
+    const minGap = TOKEN_RADIUS * 2.4;
+    const occupied = [at, ...reserved];
+    for (const other of this.workspaceTokens) if (other !== self) occupied.push(other);
+
+    for (let ring = 1; ring <= 4; ring++) {
+      const radius = TOKEN_RADIUS * 2.6 * ring;
+      for (let step = 0; step < 8; step++) {
+        const angle = (step * Math.PI) / 4;
+        const spot = this.clampToWorkspace(at.x + Math.cos(angle) * radius, at.y + Math.sin(angle) * radius);
+        if (occupied.every((o) => Phaser.Math.Distance.Between(spot.x, spot.y, o.x, o.y) >= minGap)) return spot;
+      }
+    }
+    return this.clampToWorkspace(at.x + TOKEN_RADIUS * 2.6, at.y);
+  }
+
+  // ---------------------------------------------------------------- Effects
+
+  burst(at, colors, count) {
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+      const dist = 60 + Math.random() * 50;
+      const dot = this.add
+        .circle(at.x, at.y, 4 + Math.random() * 4, Phaser.Utils.Array.GetRandom(colors))
+        .setDepth(FX_DEPTH);
+      this.tweens.add({
+        targets: dot,
+        x: at.x + Math.cos(angle) * dist,
+        y: at.y + Math.sin(angle) * dist,
+        alpha: 0,
+        scale: 0.3,
+        duration: 600 + Math.random() * 200,
+        ease: 'Cubic.easeOut',
+        onComplete: () => dot.destroy(),
+      });
+    }
+  }
+
+  floatText(x, y, text, color, delay = 0) {
+    const t = this.add
+      .text(x, y, text, textStyle(22, 700, color, { stroke: COLORS.cream, strokeThickness: 6 }))
+      .setOrigin(0.5)
+      .setDepth(FX_DEPTH)
+      .setAlpha(0);
+    this.tweens.chain({
+      targets: t,
+      tweens: [
+        { alpha: 1, delay, duration: 150 },
+        { y: y - 40, alpha: 0, delay: 700, duration: 500 },
+      ],
+      onComplete: () => t.destroy(),
+    });
+  }
+
+  // ---------------------------------------------------------------- Save data
+
+  loadProgress() {
+    this.unlockedIngredients = new Set(STARTING_ITEMS);
+    this.servedDishes = new Set();
+    this.discoveredRecipes = new Set();
+    try {
+      const saved = JSON.parse(localStorage.getItem(SAVE_KEY));
+      if (saved) {
+        saved.unlocked?.forEach((id) => this.unlockedIngredients.add(id));
+        saved.served?.forEach((id) => this.servedDishes.add(id));
+        saved.recipes?.forEach((id) => this.discoveredRecipes.add(id));
+      }
+    } catch {
+      // Storage unavailable or corrupt: start fresh.
+    }
+
+    // Saves from before recipe tracking: count a recipe as found if its output was ever made.
+    const starting = new Set(STARTING_ITEMS);
+    for (const recipe of recipesData) {
+      const made =
+        this.servedDishes.has(recipe.output) ||
+        (this.unlockedIngredients.has(recipe.output) && !starting.has(recipe.output));
+      if (made) this.discoveredRecipes.add(recipe.id);
+    }
+  }
+
+  saveProgress() {
+    try {
+      localStorage.setItem(
+        SAVE_KEY,
+        JSON.stringify({
+          unlocked: [...this.unlockedIngredients],
+          served: [...this.servedDishes],
+          recipes: [...this.discoveredRecipes],
+        }),
+      );
+    } catch {
+      // Ignore: progress just won't persist.
+    }
+  }
+
+  resetProgress() {
+    if (!window.confirm('Reset all progress?')) return;
+    try {
+      localStorage.removeItem(SAVE_KEY);
+    } catch {
+      // Ignore.
+    }
+    this.skipWorkspaceSave = true; // a reset also clears the table
+    this.scene.restart();
+  }
+}

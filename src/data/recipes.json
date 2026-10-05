@@ -1,0 +1,91 @@
+[
+  { "id": "rec_001", "inputs": ["ing_meat", "tool_cut"], "output": "ing_sliced_meat", "consumed": ["ing_meat"] },
+  { "id": "rec_002", "inputs": ["ing_sliced_meat", "tool_grill"], "output": "dish_steak", "consumed": ["ing_sliced_meat"] },
+  { "id": "rec_003", "inputs": ["ing_flour", "ing_water"], "output": "ing_dough", "consumed": ["ing_flour", "ing_water"] },
+  { "id": "rec_004", "inputs": ["ing_dough", "ing_tomato_sauce"], "output": "ing_raw_pizza", "consumed": ["ing_dough", "ing_tomato_sauce"] },
+  { "id": "rec_005", "inputs": ["ing_raw_pizza", "tool_oven"], "output": "dish_pizza", "consumed": ["ing_raw_pizza"] },
+  { "id": "rec_006", "inputs": ["ing_tomato", "tool_cut"], "output": "ing_tomato_sauce", "consumed": ["ing_tomato"] },
+
+  { "id": "rec_007", "inputs": ["ing_garlic", "tool_mortar"], "output": "ing_garlic_paste", "consumed": ["ing_garlic"] },
+  { "id": "rec_008", "inputs": ["ing_chili", "tool_mortar"], "output": "ing_chili_flakes", "consumed": ["ing_chili"] },
+  { "id": "rec_009", "inputs": ["ing_chili_flakes", "ing_salt"], "output": "ing_spice_rub", "consumed": ["ing_chili_flakes", "ing_salt"] },
+  { "id": "rec_010", "inputs": ["ing_tomato_sauce", "ing_chili_flakes"], "output": "ing_spicy_sauce", "consumed": ["ing_tomato_sauce", "ing_chili_flakes"] },
+  { "id": "rec_011", "inputs": ["ing_onion", "tool_cut"], "output": "ing_chopped_onion", "consumed": ["ing_onion"] },
+
+  { "id": "rec_012", "inputs": ["ing_rice", "tool_pot"], "output": "ing_steamed_rice", "consumed": ["ing_rice"] },
+  { "id": "rec_013", "inputs": ["ing_steamed_rice", "ing_egg"], "output": "ing_egg_rice", "consumed": ["ing_steamed_rice", "ing_egg"] },
+  { "id": "rec_014", "inputs": ["ing_egg_rice", "tool_pan"], "output": "dish_fried_rice", "consumed": ["ing_egg_rice"] },
+  { "id": "rec_015", "inputs": ["ing_egg", "tool_pan"], "output": "dish_fried_egg", "consumed": ["ing_egg"] },
+
+  { "id": "rec_016", "inputs": ["ing_chicken", "tool_cut"], "output": "ing_diced_chicken", "consumed": ["ing_chicken"] },
+  { "id": "rec_017", "inputs": ["ing_diced_chicken", "ing_spice_rub"], "output": "ing_seasoned_chicken", "consumed": ["ing_diced_chicken", "ing_spice_rub"] },
+  { "id": "rec_018", "inputs": ["ing_seasoned_chicken", "tool_grill"], "output": "dish_grilled_chicken", "consumed": ["ing_seasoned_chicken"] },
+  { "id": "rec_019", "inputs": ["ing_diced_chicken", "tool_pot"], "output": "ing_chicken_broth", "consumed": ["ing_diced_chicken"] },
+  { "id": "rec_020", "inputs": ["ing_chicken_broth", "ing_chopped_onion"], "output": "dish_chicken_soup", "consumed": ["ing_chicken_broth", "ing_chopped_onion"] },
+
+  { "id": "rec_021", "inputs": ["ing_pork", "ing_garlic_paste"], "output": "ing_garlic_pork", "consumed": ["ing_pork", "ing_garlic_paste"] },
+  { "id": "rec_022", "inputs": ["ing_garlic_pork", "tool_pan"], "output": "dish_pork_stir_fry", "consumed": ["ing_garlic_pork"] },
+  { "id": "rec_023", "inputs": ["ing_pork", "ing_spice_rub"], "output": "ing_rubbed_pork", "consumed": ["ing_pork", "ing_spice_rub"] },
+  { "id": "rec_024", "inputs": ["ing_rubbed_pork", "tool_oven"], "output": "dish_roast_pork", "consumed": ["ing_rubbed_pork"] },
+  { "id": "rec_025", "inputs": ["ing_pork", "ing_spicy_sauce"], "output": "ing_spicy_pork", "consumed": ["ing_pork", "ing_spicy_sauce"] },
+  { "id": "rec_026", "inputs": ["ing_spicy_pork", "tool_grill"], "output": "dish_spicy_pork_bbq", "consumed": ["ing_spicy_pork"] },
+
+  { "id": "rec_027", "inputs": ["ing_dough", "tool_oven"], "output": "ing_bread", "consumed": ["ing_dough"] },
+  { "id": "rec_028", "inputs": ["ing_bread", "ing_garlic_paste"], "output": "dish_garlic_bread", "consumed": ["ing_bread", "ing_garlic_paste"] },
+  { "id": "rec_029", "inputs": ["ing_tomato_sauce", "tool_pot"], "output": "dish_tomato_soup", "consumed": ["ing_tomato_sauce"] },
+
+  { "id": "rec_030", "inputs": ["ing_salt", "ing_water"], "output": "ing_brine", "consumed": ["ing_salt", "ing_water"] },
+  { "id": "rec_031", "inputs": ["ing_brine", "ing_chicken"], "output": "ing_brined_chicken", "consumed": ["ing_brine", "ing_chicken"] },
+  { "id": "rec_032", "inputs": ["ing_brined_chicken", "tool_oven"], "output": "dish_roast_chicken", "consumed": ["ing_brined_chicken"] },
+
+  { "id": "rec_033", "inputs": ["ing_onion", "tool_pan"], "output": "ing_caramelized_onion", "consumed": ["ing_onion"] },
+  { "id": "rec_034", "inputs": ["ing_caramelized_onion", "tool_pot"], "output": "dish_onion_soup", "consumed": ["ing_caramelized_onion"] },
+  { "id": "rec_035", "inputs": ["ing_garlic", "tool_pan"], "output": "ing_fried_garlic", "consumed": ["ing_garlic"] },
+  { "id": "rec_036", "inputs": ["ing_fried_garlic", "ing_steamed_rice"], "output": "dish_garlic_rice", "consumed": ["ing_fried_garlic", "ing_steamed_rice"] },
+
+  { "id": "rec_037", "inputs": ["ing_tomato", "ing_onion"], "output": "ing_salsa", "consumed": ["ing_tomato", "ing_onion"] },
+  { "id": "rec_038", "inputs": ["ing_flour", "tool_pan"], "output": "ing_tortilla", "consumed": ["ing_flour"] },
+  { "id": "rec_039", "inputs": ["ing_tortilla", "ing_salsa"], "output": "dish_taco", "consumed": ["ing_tortilla", "ing_salsa"] },
+
+  { "id": "rec_040", "inputs": ["ing_egg", "ing_flour"], "output": "ing_batter", "consumed": ["ing_egg", "ing_flour"] },
+  { "id": "rec_041", "inputs": ["ing_batter", "tool_pan"], "output": "dish_pancakes", "consumed": ["ing_batter"] },
+  { "id": "rec_042", "inputs": ["ing_batter", "ing_diced_chicken"], "output": "ing_battered_chicken", "consumed": ["ing_batter", "ing_diced_chicken"] },
+  { "id": "rec_043", "inputs": ["ing_battered_chicken", "tool_pan"], "output": "dish_fried_chicken", "consumed": ["ing_battered_chicken"] },
+
+  { "id": "rec_044", "inputs": ["ing_meat", "tool_mortar"], "output": "ing_ground_beef", "consumed": ["ing_meat"] },
+  { "id": "rec_045", "inputs": ["ing_ground_beef", "tool_grill"], "output": "ing_beef_patty", "consumed": ["ing_ground_beef"] },
+  { "id": "rec_046", "inputs": ["ing_beef_patty", "ing_bread"], "output": "dish_burger", "consumed": ["ing_beef_patty", "ing_bread"] },
+
+  { "id": "rec_047", "inputs": ["ing_pork", "tool_mortar"], "output": "ing_ground_pork", "consumed": ["ing_pork"] },
+  { "id": "rec_048", "inputs": ["ing_ground_pork", "ing_dough"], "output": "ing_raw_dumplings", "consumed": ["ing_ground_pork", "ing_dough"] },
+  { "id": "rec_049", "inputs": ["ing_raw_dumplings", "tool_pot"], "output": "dish_dumplings", "consumed": ["ing_raw_dumplings"] },
+
+  { "id": "rec_050", "inputs": ["ing_dough", "tool_cut"], "output": "ing_noodles", "consumed": ["ing_dough"] },
+  { "id": "rec_051", "inputs": ["ing_noodles", "ing_chicken_broth"], "output": "dish_ramen", "consumed": ["ing_noodles", "ing_chicken_broth"] },
+  { "id": "rec_052", "inputs": ["ing_noodles", "ing_tomato_sauce"], "output": "dish_spaghetti", "consumed": ["ing_noodles", "ing_tomato_sauce"] },
+
+  { "id": "rec_053", "inputs": ["ing_egg", "tool_pot"], "output": "dish_boiled_egg", "consumed": ["ing_egg"] },
+
+  { "id": "rec_054", "inputs": ["ing_egg", "ing_egg"], "output": "ing_beaten_eggs", "consumed": ["ing_egg", "ing_egg"] },
+  { "id": "rec_055", "inputs": ["ing_beaten_eggs", "tool_pan"], "output": "dish_omelette", "consumed": ["ing_beaten_eggs"] },
+
+  { "id": "rec_056", "inputs": ["ing_tomato", "ing_tomato"], "output": "ing_tomato_paste", "consumed": ["ing_tomato", "ing_tomato"] },
+  { "id": "rec_057", "inputs": ["ing_tomato_paste", "ing_ground_beef"], "output": "ing_bolognese", "consumed": ["ing_tomato_paste", "ing_ground_beef"] },
+  { "id": "rec_058", "inputs": ["ing_bolognese", "ing_noodles"], "output": "dish_spaghetti_bolognese", "consumed": ["ing_bolognese", "ing_noodles"] },
+
+  { "id": "rec_059", "inputs": ["ing_dough", "ing_dough"], "output": "ing_pasta_sheets", "consumed": ["ing_dough", "ing_dough"] },
+  { "id": "rec_060", "inputs": ["ing_pasta_sheets", "ing_bolognese"], "output": "ing_raw_lasagna", "consumed": ["ing_pasta_sheets", "ing_bolognese"] },
+  { "id": "rec_061", "inputs": ["ing_raw_lasagna", "tool_oven"], "output": "dish_lasagna", "consumed": ["ing_raw_lasagna"] },
+
+  { "id": "rec_062", "inputs": ["ing_chili", "ing_chili"], "output": "ing_chili_oil", "consumed": ["ing_chili", "ing_chili"] },
+  { "id": "rec_063", "inputs": ["ing_chili_oil", "ing_noodles"], "output": "dish_spicy_noodles", "consumed": ["ing_chili_oil", "ing_noodles"] },
+
+  { "id": "rec_064", "inputs": ["ing_meat", "ing_meat"], "output": "ing_beef_joint", "consumed": ["ing_meat", "ing_meat"] },
+  { "id": "rec_065", "inputs": ["ing_beef_joint", "tool_oven"], "output": "dish_roast_beef", "consumed": ["ing_beef_joint"] },
+
+  { "id": "rec_066", "inputs": ["ing_pork", "ing_pork"], "output": "ing_pork_belly", "consumed": ["ing_pork", "ing_pork"] },
+  { "id": "rec_067", "inputs": ["ing_pork_belly", "tool_pot"], "output": "dish_braised_pork", "consumed": ["ing_pork_belly"] },
+
+  { "id": "rec_068", "inputs": ["ing_steamed_rice", "ing_steamed_rice"], "output": "ing_rice_ball", "consumed": ["ing_steamed_rice", "ing_steamed_rice"] },
+  { "id": "rec_069", "inputs": ["ing_rice_ball", "tool_grill"], "output": "dish_grilled_rice_ball", "consumed": ["ing_rice_ball"] }
+]
