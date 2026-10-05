@@ -1,6 +1,6 @@
 const MUTE_KEY = 'secret-recipe-muted';
 
-// Sound files dropped into public/assets/sounds/ as <name>.<ext> (found and loaded by the Preloader).
+// Sound files dropped into public/assets/sounds/ (or public/assets/) as <name>.<ext>, found and loaded by the Preloader.
 export const SOUND_FILES = ['success', 'fail', 'explosion'];
 export const SOUND_EXTENSIONS = ['mp3', 'ogg', 'wav', 'm4a'];
 

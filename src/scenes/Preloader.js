@@ -1,16 +1,21 @@
 import Phaser from 'phaser';
 import { SOUND_FILES, SOUND_EXTENSIONS } from '../audio/Sfx.js';
 
-/** Finds public/assets/sounds/<name>.<ext> for the first extension that exists (null if none). */
+// Sound files can sit in public/assets/sounds/ or straight in public/assets/.
+const SOUND_FOLDERS = ['sounds/', ''];
+
+/** Finds <name>.<ext> in the first folder/extension that exists (null if none). */
 async function findSound(name) {
-  for (const ext of SOUND_EXTENSIONS) {
-    const url = `sounds/${name}.${ext}`;
-    try {
-      // The dev/preview server answers unknown paths with index.html, so check it's really audio.
-      const res = await fetch(`assets/${url}`, { method: 'HEAD' });
-      if (res.ok && (res.headers.get('content-type') ?? '').startsWith('audio')) return url;
-    } catch {
-      // Offline or blocked: treat as missing.
+  for (const folder of SOUND_FOLDERS) {
+    for (const ext of SOUND_EXTENSIONS) {
+      const url = `${folder}${name}.${ext}`;
+      try {
+        // The dev/preview server answers unknown paths with index.html, so check it's really audio.
+        const res = await fetch(`assets/${url}`, { method: 'HEAD' });
+        if (res.ok && (res.headers.get('content-type') ?? '').startsWith('audio')) return url;
+      } catch {
+        // Offline or blocked: treat as missing.
+      }
     }
   }
   return null;
