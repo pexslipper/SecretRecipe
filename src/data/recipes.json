@@ -87,5 +87,16 @@
   { "id": "rec_067", "inputs": ["ing_pork_belly", "tool_pot"], "output": "dish_braised_pork", "consumed": ["ing_pork_belly"] },
 
   { "id": "rec_068", "inputs": ["ing_steamed_rice", "ing_steamed_rice"], "output": "ing_rice_ball", "consumed": ["ing_steamed_rice", "ing_steamed_rice"] },
-  { "id": "rec_069", "inputs": ["ing_rice_ball", "tool_grill"], "output": "dish_grilled_rice_ball", "consumed": ["ing_rice_ball"] }
+  { "id": "rec_069", "inputs": ["ing_rice_ball", "tool_grill"], "output": "dish_grilled_rice_ball", "consumed": ["ing_rice_ball"] },
+
+  { "id": "rec_070", "inputs": ["ing_water", "ing_water"], "output": "joke_very_wet_water", "consumed": ["ing_water", "ing_water"] },
+  { "id": "rec_071", "inputs": ["ing_egg", "tool_oven"], "output": "joke_exploded_egg", "consumed": ["ing_egg"] },
+  { "id": "rec_072", "inputs": ["ing_chicken", "ing_egg"], "output": "joke_chicken_or_egg", "consumed": ["ing_chicken", "ing_egg"] },
+  { "id": "rec_073", "inputs": ["ing_onion", "ing_onion"], "output": "joke_tears", "consumed": ["ing_onion", "ing_onion"] },
+  { "id": "rec_074", "inputs": ["ing_garlic", "ing_garlic"], "output": "joke_vampire_repellent", "consumed": ["ing_garlic", "ing_garlic"] },
+  { "id": "rec_075", "inputs": ["ing_flour", "ing_flour"], "output": "joke_flour_cloud", "consumed": ["ing_flour", "ing_flour"] },
+  { "id": "rec_076", "inputs": ["ing_salt", "ing_salt"], "output": "joke_salt_mountain", "consumed": ["ing_salt", "ing_salt"] },
+  { "id": "rec_077", "inputs": ["tool_pan", "tool_pan"], "output": "joke_drum_solo", "consumed": [] },
+  { "id": "rec_078", "inputs": ["tool_grill", "ing_water"], "output": "joke_big_steam", "consumed": ["ing_water"] },
+  { "id": "rec_079", "inputs": ["ing_chili", "ing_egg"], "output": "joke_dragon_egg", "consumed": ["ing_chili", "ing_egg"] }
 ]

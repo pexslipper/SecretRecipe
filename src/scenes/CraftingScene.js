@@ -5,6 +5,11 @@ import { combinationHints } from '../engine/Hints.js';
 import recipesData from '../data/recipes.json';
 import itemsData from '../data/items.json';
 import { STARTING_ITEMS, REUSABLE_TYPES } from '../data/start.js';
+import { unlocksDue, nextUnlock } from '../data/unlocks.js';
+import { CHAPTERS_BY_KEY, chapterDishes } from '../data/chapters.js';
+import { HintBank } from '../engine/HintBank.js';
+import { Sfx } from '../audio/Sfx.js';
+import { RevealCard } from '../ui/RevealCard.js';
 import { ItemToken, TOKEN_RADIUS } from '../ui/ItemToken.js';
 import { Sidebar } from '../ui/Sidebar.js';
 import { StorageDrawer } from '../ui/StorageDrawer.js';
@@ -28,7 +33,14 @@ const STORAGE_DEPTH = 1_000_000;
 const HUD_DEPTH = 1_000_000;
 const DRAG_DEPTH = 2_000_000;
 const FX_DEPTH = 3_000_000;
+const REVEAL_DEPTH = 3_500_000;
 const MODAL_DEPTH = 4_000_000;
+
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+const formatTime = (ms) => {
+  const s = Math.ceil(ms / 1000);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+};
 
 export class CraftingScene extends Phaser.Scene {
   constructor() {
@@ -50,6 +62,7 @@ export class CraftingScene extends Phaser.Scene {
     this.itemsById = new Map(itemsData.map((item) => [item.id, item]));
     this.layout = layoutFor(this.scale.width, this.scale.height, { toolsOpen: loadToolsOpen() });
     this.ws = this.layout.workspace;
+    this.sfx = new Sfx(this);
 
     this.setupUI();
     this.setupInput();
@@ -129,7 +142,23 @@ export class CraftingScene extends Phaser.Scene {
       onClick: () => this.toggleHintMode(),
     });
     hud.push(this.hintButton);
+    // Badge with the number of hints left.
+    this.hintBadge = this.add.circle(24, -22, 13, 0xdd5a50).setStrokeStyle(2, 0xffffff);
+    this.hintBadgeText = this.add.text(24, -22, '', textStyle(15, 700, '#ffffff')).setOrigin(0.5);
+    this.hintButton.add([this.hintBadge, this.hintBadgeText]);
+    this.time.addEvent({ delay: 1000, loop: true, callback: () => this.refreshHintBadge() });
+
     const right = hudRect.x + hudRect.w;
+    this.muteButton = makeRoundButton(this, right - 232, midY + 2, 28, '', {
+      color: 0xb7a3d6,
+      darkColor: 0x8f78b5,
+      onClick: () => this.setMuteLabel(this.sfx.toggleMute()),
+    });
+    // Speaker icon drawn by hand (the emoji is murky on the button).
+    this.muteIcon = this.add.graphics();
+    this.muteButton.addAt(this.muteIcon, 2);
+    this.setMuteLabel(this.sfx.muted);
+    hud.push(this.muteButton);
     hud.push(
       makeRoundButton(this, right - 152, midY + 2, 36, 'Reset', {
         color: 0x72bdbd,
@@ -178,7 +207,26 @@ export class CraftingScene extends Phaser.Scene {
     this.storage = storage.kind === 'drawer' ? new StorageDrawer(this, storageOptions) : new Sidebar(this, storageOptions);
     this.storage.refresh(this.unlockedIngredients);
 
+    this.reveal = new RevealCard(this, { depth: REVEAL_DEPTH });
+
     this.updateHud();
+    this.refreshHintBadge();
+  }
+
+  setMuteLabel(muted) {
+    const g = this.muteIcon.clear();
+    g.fillStyle(0xffffff);
+    g.fillRect(-11, -5, 7, 10);
+    g.fillTriangle(-6, -5, 3, -12, 3, 12);
+    g.fillTriangle(-6, -5, 3, 12, -6, 5);
+    g.lineStyle(3, 0xffffff);
+    if (muted) {
+      g.lineBetween(7, -6, 15, 6);
+      g.lineBetween(15, -6, 7, 6);
+    } else {
+      g.beginPath().arc(4, 0, 7, -0.9, 0.9).strokePath();
+      g.beginPath().arc(4, 0, 13, -0.9, 0.9).strokePath();
+    }
   }
 
   updateHud() {
@@ -203,14 +251,44 @@ export class CraftingScene extends Phaser.Scene {
 
   // ---------------------------------------------------------------- Hints
 
+  /** Catches up on regenerated hints and redraws the badge (runs every second). */
+  refreshHintBadge() {
+    const bank = this.hintBank;
+    if (bank.tick(Date.now()) > 0) {
+      this.saveProgress();
+      this.hintEarned();
+    }
+    this.hintBadgeText.setText(String(bank.charges));
+    this.hintBadge.setFillStyle(bank.charges > 0 ? 0xdd5a50 : 0xa08466);
+  }
+
+  hintEarned() {
+    this.sfx.play('chime');
+    const p = this.hintButton;
+    this.floatText(p.x, p.y + 52, '+1 💡', '#c9952e');
+    this.tweens.add({ targets: p, scale: 1.2, duration: 160, yoyo: true });
+  }
+
   toggleHintMode() {
     if (this.hintMode) {
       this.exitHintMode();
       this.hintCard.hide();
       return;
     }
-    this.hintMode = true;
     this.hintCardFresh = true; // don't let this same click close the prompt
+    const bank = this.hintBank;
+    bank.tick(Date.now());
+    if (bank.charges === 0) {
+      const wait = formatTime(bank.msUntilNext(Date.now()));
+      this.hintCard.showMessage(
+        `No hints left! Find ${plural(bank.discoveriesToNext, 'more recipe')} or wait ${wait}`,
+        { autoHideMs: 3500 },
+      );
+      this.sfx.play('whoosh');
+      this.tweens.add({ targets: this.hintButton, angle: { from: -8, to: 8 }, duration: 60, yoyo: true, repeat: 2, onComplete: () => this.hintButton.setAngle(0) });
+      return;
+    }
+    this.hintMode = true;
     const verb = this.sys.game.device.input.touch ? 'Tap' : 'Click';
     this.hintCard.showMessage(`💡 ${verb} an item to see its hints`);
     this.hintPulse = this.tweens.add({ targets: this.hintButton, scale: 1.12, duration: 420, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
@@ -229,6 +307,10 @@ export class CraftingScene extends Phaser.Scene {
     if (!this.hintMode) return false;
     this.exitHintMode();
     this.hintCardFresh = true;
+    this.hintBank.spend(Date.now());
+    this.refreshHintBadge();
+    this.saveProgress();
+    this.sfx.play('pop');
     this.hintCard.show(itemId, { autoHideMs: 5000 });
     return true;
   }
@@ -259,7 +341,8 @@ export class CraftingScene extends Phaser.Scene {
     });
 
     this.input.keyboard.on('keydown-ESC', () => {
-      if (this.cookbook.isOpen) this.cookbook.close();
+      if (this.reveal.isOpen) this.reveal.close();
+      else if (this.cookbook.isOpen) this.cookbook.close();
       else if (this.hintMode) {
         this.exitHintMode();
         this.hintCard.hide();
@@ -293,6 +376,7 @@ export class CraftingScene extends Phaser.Scene {
   startDrag(token, pointer) {
     this.dragging = { token, offsetX: pointer.x - token.x, offsetY: pointer.y - token.y };
     token.setDepth(DRAG_DEPTH);
+    this.sfx.play('pop');
   }
 
   endDrag() {
@@ -304,6 +388,7 @@ export class CraftingScene extends Phaser.Scene {
     // Dropping back on the storage panel removes the copy.
     if (this.storage.contains(token.x, token.y)) {
       this.removeToken(token, true);
+      this.sfx.play('whoosh');
       return;
     }
 
@@ -369,18 +454,68 @@ export class CraftingScene extends Phaser.Scene {
       return;
     }
 
+    const isNewRecipe = !this.discoveredRecipes.has(result.recipeId);
     this.discoveredRecipes.add(result.recipeId);
     if (result.action === 'ADD_TO_INGREDIENTS') {
       const isNew = !this.unlockedIngredients.has(result.output);
       this.unlockedIngredients.add(result.output);
       this.spawnResult(result.output, at);
-      if (isNew) this.animateToIngredientTab(result.output, at);
+      this.sfx.play('success');
+      this.sfx.vibrate(25);
+      if (isNew) {
+        this.reveal.enqueue({
+          banner: 'NEW!',
+          bannerColor: 0x3f86c4,
+          item: this.itemsById.get(result.output),
+          footer: () => this.unlockTeaser(),
+          onShow: () => this.sfx.play('chime'),
+          onClose: () => this.animateToIngredientTab(result.output, at),
+          holdMs: 750,
+        });
+      }
     } else if (result.action === 'DISAPPEAR_SERVED') {
       this.animateServeAndDisappear(result.output, at);
     }
 
     this.clearSlotsAfterCrafting([dropped, target], result.consumed, at);
+    if (isNewRecipe) this.onNewDiscovery();
     this.saveProgress();
+  }
+
+  /** Every new recipe counts toward the next hint and the next unlock. */
+  onNewDiscovery() {
+    if (this.hintBank.onDiscovery(Date.now())) {
+      this.refreshHintBadge();
+      this.hintEarned();
+    }
+
+    for (const id of unlocksDue(this.discoveredRecipes.size, this.unlockedIngredients)) {
+      this.unlockedIngredients.add(id);
+      const item = this.itemsById.get(id);
+      const kind = REUSABLE_TYPES.has(item.type) ? 'tool' : 'ingredient';
+      this.reveal.enqueue({
+        banner: 'UNLOCKED!',
+        bannerColor: 0x5a9a3c,
+        item,
+        title: `New ${kind}: ${item.name}`,
+        footer: () => this.unlockTeaser(),
+        onShow: () => this.sfx.play('chime'),
+        onClose: () => {
+          this.storage.refresh(this.unlockedIngredients);
+          this.storage.revealEntry(id);
+          this.time.delayedCall(300, () => this.storage.flashNew(id));
+        },
+        holdMs: 500,
+      });
+    }
+  }
+
+  /** "🔒 Something new unlocks in 2 more discoveries" — or nothing when it's about to unlock / all unlocked. */
+  unlockTeaser() {
+    const next = nextUnlock(this.discoveredRecipes.size, this.unlockedIngredients);
+    if (!next || next.remaining === 0) return '';
+    const n = next.remaining;
+    return `🔒 Something new unlocks in ${n} more ${n === 1 ? 'discovery' : 'discoveries'}`;
   }
 
   spawnResult(itemId, at) {
@@ -424,18 +559,50 @@ export class CraftingScene extends Phaser.Scene {
       ],
       onComplete: () => dish.destroy(),
     });
-    this.burst(at, [0xf2c230, 0xffffff, 0xff9f43], 14);
+    const item = this.itemsById.get(itemId);
+    const joke = item.type === 'joke';
+    this.burst(at, joke ? [0xb594d6, 0xff6b6b, 0xffd166] : [0xf2c230, 0xffffff, 0xff9f43], joke ? 20 : 14);
+
+    if (item.sfx) {
+      this.sfx.play(item.sfx);
+      this.sfx.vibrate([60, 30, 90]);
+      if (item.sfx === 'explosion') this.cameras.main.shake(250, 0.008);
+    } else if (joke) {
+      this.sfx.play('success');
+      this.sfx.vibrate(25);
+    } else {
+      this.sfx.play('success');
+      this.time.delayedCall(150, () => this.sfx.play('jingle'));
+      this.sfx.vibrate([30, 40, 60]);
+    }
 
     const isFirstServe = !this.servedDishes.has(itemId);
     this.servedDishes.add(itemId);
     this.updateHud();
 
-    const name = this.itemsById.get(itemId).name;
-    this.floatText(at.x, at.y - 70, `${name} served!`, '#d08a18');
-    if (isFirstServe) {
-      this.floatText(at.x, at.y - 100, 'New recipe found!', '#5a9a3c', 200);
+    this.floatText(at.x, at.y - 70, joke ? `Oops! ${item.name}!` : `${item.name} served!`, joke ? '#8f5fc4' : '#d08a18');
+    if (!isFirstServe) return;
+
+    this.reveal.enqueue({
+      banner: joke ? 'OOPS!' : 'NEW DISH!',
+      bannerColor: joke ? 0x9b6fd0 : 0xe0912f,
+      item,
+      footer: () => this.unlockTeaser(),
       // Draw the eye to the counter that just went up.
-      this.tweens.add({ targets: this.recipesButton, scale: 1.12, duration: 160, yoyo: true, repeat: 1, delay: 300 });
+      onClose: () => this.tweens.add({ targets: this.recipesButton, scale: 1.12, duration: 160, yoyo: true, repeat: 1 }),
+    });
+
+    const chapter = CHAPTERS_BY_KEY.get(item.chapter);
+    const inChapter = chapter ? chapterDishes(chapter.key, this.dishIds, this.itemsById) : [];
+    if (inChapter.length && inChapter.every((id) => this.servedDishes.has(id))) {
+      this.reveal.enqueue({
+        banner: 'CHAPTER COMPLETE!',
+        bannerColor: 0xd4a017,
+        icon: '🏅',
+        title: `${chapter.emoji} ${chapter.name}`,
+        desc: `You found all ${inChapter.length} recipes in this chapter!`,
+        onShow: () => this.sfx.play('fanfare'),
+      });
     }
   }
 
@@ -456,6 +623,8 @@ export class CraftingScene extends Phaser.Scene {
 
     const spot = this.findFreeSpot({ x: target.x, y: target.y }, dropped, []);
     this.tweens.add({ targets: dropped, x: spot.x, y: spot.y, duration: 260, ease: 'Back.easeOut' });
+    this.sfx.play('fail');
+    this.sfx.vibrate(15);
     this.floatText(target.x, target.y - 70, "Doesn't go together!", '#a0522d');
   }
 
@@ -547,8 +716,9 @@ export class CraftingScene extends Phaser.Scene {
     this.unlockedIngredients = new Set(STARTING_ITEMS);
     this.servedDishes = new Set();
     this.discoveredRecipes = new Set();
+    let saved = null;
     try {
-      const saved = JSON.parse(localStorage.getItem(SAVE_KEY));
+      saved = JSON.parse(localStorage.getItem(SAVE_KEY));
       if (saved) {
         saved.unlocked?.forEach((id) => this.unlockedIngredients.add(id));
         saved.served?.forEach((id) => this.servedDishes.add(id));
@@ -557,6 +727,7 @@ export class CraftingScene extends Phaser.Scene {
     } catch {
       // Storage unavailable or corrupt: start fresh.
     }
+    this.hintBank = HintBank.fromSave(saved?.hints, Date.now());
 
     // Saves from before recipe tracking: count a recipe as found if its output was ever made.
     const starting = new Set(STARTING_ITEMS);
@@ -566,6 +737,9 @@ export class CraftingScene extends Phaser.Scene {
         (this.unlockedIngredients.has(recipe.output) && !starting.has(recipe.output));
       if (made) this.discoveredRecipes.add(recipe.id);
     }
+
+    // Milestones already passed (e.g. an older save) unlock quietly.
+    unlocksDue(this.discoveredRecipes.size, this.unlockedIngredients).forEach((id) => this.unlockedIngredients.add(id));
   }
 
   saveProgress() {
@@ -576,6 +750,7 @@ export class CraftingScene extends Phaser.Scene {
           unlocked: [...this.unlockedIngredients],
           served: [...this.servedDishes],
           recipes: [...this.discoveredRecipes],
+          hints: this.hintBank.toSave(),
         }),
       );
     } catch {

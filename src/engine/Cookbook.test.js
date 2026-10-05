@@ -8,8 +8,8 @@ const cookbook = buildCookbook(recipes, new RecipeEngine(recipes));
 const stepsOf = (dishId) => cookbook.find((d) => d.dishId === dishId).steps.map((r) => r.id);
 
 describe('buildCookbook', () => {
-  it('lists every final dish and nothing else', () => {
-    const dishes = items.filter((i) => i.type === 'final_dish').map((i) => i.id);
+  it('lists every final dish and joke, and nothing else', () => {
+    const dishes = items.filter((i) => i.type === 'final_dish' || i.type === 'joke').map((i) => i.id);
     expect(cookbook.map((d) => d.dishId).sort()).toEqual(dishes.sort());
   });
 

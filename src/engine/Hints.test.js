@@ -33,7 +33,7 @@ describe('combinationHints', () => {
 
   it('every ingredient and tool has at least one combination', () => {
     for (const item of items) {
-      if (item.type === 'final_dish') continue;
+      if (item.type === 'final_dish' || item.type === 'joke') continue;
       expect(hints(item.id).total, item.id).toBeGreaterThan(0);
     }
   });

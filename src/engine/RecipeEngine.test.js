@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { RecipeEngine } from './RecipeEngine.js';
 import recipes from '../data/recipes.json';
 import items from '../data/items.json';
-import { STARTING_ITEMS } from '../data/start.js';
+import { STARTING_ITEMS, UNLOCKS } from '../data/unlocks.js';
+import { CHAPTERS_BY_KEY } from '../data/chapters.js';
 
 const engine = new RecipeEngine(recipes);
 
@@ -29,7 +30,7 @@ describe('RecipeEngine', () => {
   });
 
   it('Test 4: invalid pair fails and uses nothing up', () => {
-    const r = engine.combine('ing_water', 'tool_grill');
+    const r = engine.combine('ing_water', 'tool_cut');
     expect(r.success).toBe(false);
     expect(r.action).toBe('NO_MATCH');
     expect(r.output).toBeNull();
@@ -59,8 +60,8 @@ describe('data integrity', () => {
     STARTING_ITEMS.forEach((id) => expect(itemIds.has(id)).toBe(true));
   });
 
-  it('every recipe is reachable from the starting set', () => {
-    const unlocked = new Set(STARTING_ITEMS);
+  it('every recipe is reachable from the starting set plus milestone unlocks', () => {
+    const unlocked = new Set([...STARTING_ITEMS, ...UNLOCKS.map((u) => u.item)]);
     let changed = true;
     while (changed) {
       changed = false;
@@ -78,7 +79,7 @@ describe('data integrity', () => {
   it('early game: plenty to discover straight from the starting items', () => {
     const start = new Set(STARTING_ITEMS);
     const firstStep = recipes.filter((r) => r.inputs.every((id) => start.has(id)));
-    expect(firstStep.length).toBeGreaterThanOrEqual(15);
+    expect(firstStep.length).toBeGreaterThanOrEqual(8);
   });
 
   it('no two recipes use the same pair of inputs', () => {
@@ -92,10 +93,21 @@ describe('data integrity', () => {
       if (item.type === 'crafted_ingredient') {
         expect(engine.isIntermediateIngredient(item.id), `${item.id} is never used as an input`).toBe(true);
       }
-      if (item.type === 'final_dish') {
-        expect(engine.isIntermediateIngredient(item.id), `${item.id} is a dish but used as an input`).toBe(false);
+      if (item.type === 'final_dish' || item.type === 'joke') {
+        expect(engine.isIntermediateIngredient(item.id), `${item.id} is final but used as an input`).toBe(false);
       }
     }
+  });
+
+  it('every dish and joke belongs to a Recipe Book chapter', () => {
+    const finals = items.filter((i) => !engine.isIntermediateIngredient(i.id) && recipes.some((r) => r.output === i.id));
+    for (const item of finals) {
+      expect(CHAPTERS_BY_KEY.has(item.chapter), `${item.id} has no chapter`).toBe(true);
+    }
+  });
+
+  it('every item has a description for its reveal card', () => {
+    for (const item of items) expect(item.desc, item.id).toBeTruthy();
   });
 
   it('every item has its own emoji', () => {

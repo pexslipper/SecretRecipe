@@ -21,6 +21,7 @@ export const TYPE_COLORS = {
   tool: 0xb0a49a,
   station: 0xf0a060,
   final_dish: 0xf2c44f,
+  joke: 0xb594d6,
 };
 
 /** Text style helper with the shared font. */

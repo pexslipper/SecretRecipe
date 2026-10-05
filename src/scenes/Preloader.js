@@ -1,4 +1,20 @@
 import Phaser from 'phaser';
+import { SOUND_FILES, SOUND_EXTENSIONS } from '../audio/Sfx.js';
+
+/** Finds public/assets/sounds/<name>.<ext> for the first extension that exists (null if none). */
+async function findSound(name) {
+  for (const ext of SOUND_EXTENSIONS) {
+    const url = `sounds/${name}.${ext}`;
+    try {
+      // The dev/preview server answers unknown paths with index.html, so check it's really audio.
+      const res = await fetch(`assets/${url}`, { method: 'HEAD' });
+      if (res.ok && (res.headers.get('content-type') ?? '').startsWith('audio')) return url;
+    } catch {
+      // Offline or blocked: treat as missing.
+    }
+  }
+  return null;
+}
 
 export class Preloader extends Phaser.Scene {
   constructor() {
@@ -24,7 +40,16 @@ export class Preloader extends Phaser.Scene {
     // this.load.image('icon_meat', 'icons/meat.png');
   }
 
-  create() {
-    this.scene.start('MainMenu');
+  async create() {
+    // Sound effects are optional: load whichever ones are in public/assets/sounds/.
+    const found = await Promise.all(SOUND_FILES.map(async (name) => [name, await findSound(name)]));
+    const files = found.filter(([, url]) => url);
+    if (files.length) {
+      for (const [name, url] of files) this.load.audio(`sfx_${name}`, url);
+      this.load.once('complete', () => this.scene.start('MainMenu'));
+      this.load.start();
+    } else {
+      this.scene.start('MainMenu');
+    }
   }
 }

@@ -2,6 +2,7 @@ import { COLORS, textStyle } from './theme.js';
 import { makeRoundButton } from './Buttons.js';
 import { PointerGesture } from './PointerGesture.js';
 import { KineticScroller, attachScroller } from './KineticScroller.js';
+import { CHAPTERS } from '../data/chapters.js';
 
 const MAX_PANEL_W = 820;
 const MAX_PANEL_H = 600;
@@ -19,7 +20,8 @@ const GAP_ROW_H = 20;
 const CENSOR_COLOR = 0x2a1d14;
 
 /**
- * Full-screen modal listing every dish and its steps from raw ingredients to the finished food.
+ * Full-screen modal listing every dish and its steps from raw ingredients to the finished food,
+ * grouped into chapters (Breakfast, Italian, …) with a medal for each completed chapter.
  * Steps the player hasn't made yet are covered by a black censor bar.
  * Content is rebuilt on every open, sized to the screen, and scrolls freely: swipe up/down on the
  * page (with momentum) or use the mouse wheel.
@@ -143,11 +145,72 @@ export class CookbookModal {
   // ---------------------------------------------------------------- Content
 
   buildRows() {
+    const groups = CHAPTERS.map((chapter) => ({
+      chapter,
+      entries: this.cookbook.filter(({ dishId }) => this.itemsById.get(dishId).chapter === chapter.key),
+    })).filter((g) => g.entries.length);
+    const progress = (entries) => ({
+      served: entries.filter(({ dishId }) => this.isDishServed(dishId)).length,
+      total: entries.length,
+    });
+
+    this.buildBadgeRow(groups.map((g) => ({ chapter: g.chapter, ...progress(g.entries) })));
+    groups.forEach((g) => {
+      this.rows.push({ height: GAP_ROW_H, parts: [] });
+      this.buildChapterHeader(g.chapter, progress(g.entries));
+      this.buildDishes(g.entries);
+    });
+  }
+
+  /** A row of small chips, one per chapter: "🥐 2/4", or a medal once the chapter is complete. */
+  buildBadgeRow(chapters) {
+    const H = 48;
+    const margin = this.compact ? 24 : 36;
+    const gap = 8;
+    const avail = this.panelW - margin * 2;
+    const chipW = Math.min(118, (avail - gap * (chapters.length - 1)) / chapters.length);
+    const startX = this.left + this.panelW / 2 - (chipW * chapters.length + gap * (chapters.length - 1)) / 2;
+    const parts = [];
+    chapters.forEach(({ chapter, served, total }, i) => {
+      const cx = startX + i * (chipW + gap) + chipW / 2;
+      const done = served === total;
+      const g = this.add(this.scene.add.graphics({ x: cx }), L.rows);
+      g.fillStyle(done ? 0xf6d365 : 0xf3e6cf).fillRoundedRect(-chipW / 2, -16, chipW, 32, 16);
+      g.lineStyle(2, done ? 0xd4a017 : 0xe2cfae).strokeRoundedRect(-chipW / 2, -16, chipW, 32, 16);
+      const label = this.add(
+        this.scene.add
+          .text(cx, 0, `${chapter.emoji} ${done ? '🏅' : `${served}/${total}`}`, textStyle(15, 700, done ? '#8a5a00' : COLORS.inkSoft))
+          .setOrigin(0.5),
+        L.rows,
+      );
+      parts.push(this.part(g, H / 2), this.part(label, H / 2));
+    });
+    this.rows.push({ height: H, parts });
+  }
+
+  buildChapterHeader(chapter, { served, total }) {
+    const H = 50;
+    const x = this.left + (this.compact ? 20 : 30);
+    const w = this.panelW - (this.compact ? 40 : 60);
+    const done = served === total;
+    const band = this.add(this.scene.add.graphics(), L.rows);
+    band.fillStyle(chapter.color, 0.28).fillRoundedRect(x, -H / 2 + 4, w, H - 8, 12);
+    band.lineStyle(2, chapter.color, 0.7).strokeRoundedRect(x, -H / 2 + 4, w, H - 8, 12);
+    const title = this.text(x + 14, `${chapter.emoji} ${chapter.name}`, textStyle(this.compact ? 20 : 22, 700));
+    const status = this.text(
+      x + w - 14,
+      done ? '🏅 Complete!' : `${served}/${total}`,
+      textStyle(this.compact ? 15 : 17, 700, done ? '#b07d00' : COLORS.ink),
+    ).setOrigin(1, 0.5);
+    this.rows.push({ height: H, parts: [this.part(band, H / 2), this.part(title, H / 2), this.part(status, H / 2)] });
+  }
+
+  buildDishes(entries) {
     const textX = this.left + (this.compact ? 28 : 40);
     const stepX = textX + 44;
     const stepWrap = this.left + this.panelW - (this.compact ? 28 : 40) - stepX;
 
-    this.cookbook.forEach(({ dishId, steps }, d) => {
+    entries.forEach(({ dishId, steps }, d) => {
       if (d > 0) this.rows.push({ height: GAP_ROW_H, parts: [this.part(this.rule(), GAP_ROW_H / 2)] });
 
       const dish = this.itemsById.get(dishId);
