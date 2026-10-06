@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { COLORS, TYPE_COLORS, textStyle } from './theme.js';
 
 export const TOKEN_RADIUS = 32;
+const SHADOW_Y = TOKEN_RADIUS - 2;
 /** Texture key of the item sprite sheet (public/assets/items.png + items.json). */
 export const ITEM_ATLAS = 'items';
 const SHELF_LABEL_MAX_W = 94;
@@ -44,7 +45,11 @@ export class ItemToken extends Phaser.GameObjects.Container {
     const parts = [];
 
     if (!shelf) {
-      parts.push(new Phaser.GameObjects.Ellipse(scene, 0, TOKEN_RADIUS - 2, TOKEN_RADIUS * 1.8, 12, 0x000000, 0.14));
+      this.shadow = new Phaser.GameObjects.Ellipse(scene, 0, SHADOW_Y, TOKEN_RADIUS * 1.8, 12, 0x000000, 0.14);
+      parts.push(this.shadow);
+      // Gold ring shown while another item is held over this one: "drop here to combine".
+      this.glow = new Phaser.GameObjects.Arc(scene, 0, 0, TOKEN_RADIUS + 7, 0, 360, false).setStrokeStyle(6, 0xffd24a).setAlpha(0);
+      parts.push(this.glow);
       const disc = new Phaser.GameObjects.Arc(scene, 0, 0, TOKEN_RADIUS, 0, 360, false, 0xfff8ec);
       disc.setStrokeStyle(4, TYPE_COLORS[item.type] ?? 0xc4925f);
       parts.push(disc);
@@ -81,5 +86,37 @@ export class ItemToken extends Phaser.GameObjects.Container {
   setInputEnabled(enabled) {
     if (this.hit.input) this.hit.input.enabled = enabled;
     return this;
+  }
+
+  /** Picked up / put down: the shadow drops away and softens, so the token reads as lifted off the table. */
+  setLifted(lifted) {
+    if (!this.shadow || !this.scene) return this;
+    this.scene.tweens.add({
+      targets: this.shadow,
+      y: SHADOW_Y + (lifted ? 14 : 0),
+      scaleX: lifted ? 0.8 : 1,
+      alpha: lifted ? 0.6 : 1,
+      duration: 140,
+      ease: 'Quad.easeOut',
+    });
+    return this;
+  }
+
+  setGlow(on) {
+    if (!this.glow || !this.scene) return this;
+    this.scene.tweens.add({ targets: this.glow, alpha: on ? 1 : 0, duration: 120 });
+    return this;
+  }
+
+  /** Tweens the token's scale, replacing any scale tween already running on it. */
+  tweenScale(scale, duration, ease = 'Quad.easeOut') {
+    this.scaleTween?.stop();
+    this.scaleTween = this.scene.tweens.add({ targets: this, scale, duration, ease });
+    return this;
+  }
+
+  destroy(fromScene) {
+    this.scene?.tweens.killTweensOf([this.shadow, this.glow].filter(Boolean));
+    super.destroy(fromScene);
   }
 }

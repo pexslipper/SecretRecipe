@@ -25,6 +25,9 @@ const SAVE_KEY = 'secret-recipe-save-v1';
 const WORKSPACE_REGISTRY_KEY = 'workspace-tokens';
 const COMBINE_DISTANCE = TOKEN_RADIUS * 1.6;
 const DOUBLE_CLICK_MS = 300;
+const LIFT_SCALE = 1.15; // held item
+const HOVER_SCALE = 1.12; // item the held one would combine with
+const MAX_TILT = 14; // degrees the held item leans while moving
 
 // Depth bands: workspace tokens count up from 1, the hint card and storage panel sit above them,
 // and the token being dragged sits above everything.
@@ -271,8 +274,7 @@ export class CraftingScene extends Phaser.Scene {
     );
     const spot = free ? centre : this.findFreeSpot(centre, null, []);
     const token = this.spawnWorkspaceToken(itemId, spot.x, spot.y);
-    token.setScale(0);
-    this.tweens.add({ targets: token, scale: 1, duration: 250, ease: 'Back.easeOut' });
+    token.setScale(0).tweenScale(1, 250, 'Back.easeOut');
   }
 
   // ---------------------------------------------------------------- Hints
@@ -345,8 +347,16 @@ export class CraftingScene extends Phaser.Scene {
 
   setupInput() {
     this.input.on('pointermove', (pointer) => {
-      if (!this.dragging) return;
-      this.dragging.token.setPosition(pointer.x - this.dragging.offsetX, pointer.y - this.dragging.offsetY);
+      const drag = this.dragging;
+      if (!drag) return;
+      const { token } = drag;
+      const x = pointer.x - drag.offsetX;
+      drag.tilt = Phaser.Math.Clamp(drag.tilt + (x - token.x) * 0.5, -MAX_TILT, MAX_TILT);
+      token.setPosition(x, pointer.y - drag.offsetY);
+      // Over the storage, letting go deletes the copy: fade it to say so.
+      const overStorage = this.storage.contains(token.x, token.y);
+      token.setAlpha(overStorage ? 0.55 : 1);
+      this.setHoverTarget(overStorage ? null : this.findDropTarget(token));
     });
     this.input.on('pointerup', () => this.endDrag());
     this.input.on('pointerupoutside', () => this.endDrag());
@@ -400,16 +410,37 @@ export class CraftingScene extends Phaser.Scene {
   }
 
   startDrag(token, pointer) {
-    this.dragging = { token, offsetX: pointer.x - token.x, offsetY: pointer.y - token.y };
-    token.setDepth(DRAG_DEPTH);
+    this.tweens.killTweensOf(token); // stop any slide/nudge: the pointer owns it now
+    this.dragging = { token, offsetX: pointer.x - token.x, offsetY: pointer.y - token.y, tilt: 0, hover: null };
+    token.setDepth(DRAG_DEPTH).setAngle(0);
+    token.tweenScale(LIFT_SCALE, 140, 'Back.easeOut').setLifted(true);
     this.sfx.play('pop');
+  }
+
+  /** While dragging, the held item leans into its movement and eases upright when it slows. */
+  update(_time, delta) {
+    const drag = this.dragging;
+    if (!drag) return;
+    drag.tilt *= Math.pow(0.8, delta / 16.7);
+    drag.token.setAngle(Phaser.Math.Linear(drag.token.angle, drag.tilt, 0.35));
+  }
+
+  /** Highlights the item the held one would combine with if dropped now. */
+  setHoverTarget(target) {
+    const drag = this.dragging;
+    if (!drag || drag.hover === target) return;
+    if (drag.hover?.scene) drag.hover.tweenScale(1, 120).setGlow(false);
+    drag.hover = target;
+    if (target) target.tweenScale(HOVER_SCALE, 160, 'Back.easeOut').setGlow(true);
   }
 
   endDrag() {
     if (!this.dragging) return;
     const { token } = this.dragging;
+    this.setHoverTarget(null);
     this.dragging = null;
-    token.setDepth(this.zCounter++);
+    token.setDepth(this.zCounter++).setAlpha(1).setLifted(false);
+    this.tweens.add({ targets: token, angle: 0, duration: 200, ease: 'Back.easeOut' });
 
     // Dropping back on the storage panel removes the copy.
     if (this.storage.contains(token.x, token.y)) {
@@ -422,8 +453,10 @@ export class CraftingScene extends Phaser.Scene {
     if (target) {
       this.onCombineTriggered(token, target);
     } else {
+      // Set down with a little bounce; slide back in if it was dropped off the table.
+      token.tweenScale(1, 260, 'Back.easeOut');
       const { x, y } = this.clampToWorkspace(token.x, token.y);
-      token.setPosition(x, y);
+      if (x !== token.x || y !== token.y) this.tweens.add({ targets: token, x, y, duration: 220, ease: 'Back.easeOut' });
     }
   }
 
@@ -449,12 +482,27 @@ export class CraftingScene extends Phaser.Scene {
     };
   }
 
-  removeToken(token, animate = false) {
+  /** Takes a token off the table. Animated, it shrinks away — or, with `into`, gets pulled into that point. */
+  removeToken(token, animate = false, into = null) {
     this.workspaceTokens.delete(token);
-    if (this.dragging?.token === token) this.dragging = null;
+    if (this.dragging?.hover === token) this.dragging.hover = null;
+    if (this.dragging?.token === token) {
+      this.setHoverTarget(null);
+      this.dragging = null;
+    }
     if (animate) {
       token.setInputEnabled(false);
-      this.tweens.add({ targets: token, scale: 0, alpha: 0, duration: 150, onComplete: () => token.destroy() });
+      this.tweens.killTweensOf(token);
+      token.scaleTween?.stop();
+      this.tweens.add({
+        targets: token,
+        ...(into && { x: into.x, y: into.y }),
+        scale: 0,
+        alpha: 0,
+        duration: into ? 220 : 150,
+        ease: into ? 'Quad.easeIn' : 'Linear',
+        onComplete: () => token.destroy(),
+      });
     } else {
       token.destroy();
     }
@@ -559,8 +607,7 @@ export class CraftingScene extends Phaser.Scene {
 
   spawnResult(itemId, at) {
     const token = this.spawnWorkspaceToken(itemId, at.x, at.y);
-    token.setScale(0);
-    this.tweens.add({ targets: token, scale: 1, duration: 300, ease: 'Back.easeOut' });
+    token.setScale(0).tweenScale(1, 300, 'Back.easeOut');
     return token;
   }
 
@@ -680,7 +727,7 @@ export class CraftingScene extends Phaser.Scene {
       const idx = remaining.indexOf(token.itemId);
       if (!reusable && idx !== -1) {
         remaining.splice(idx, 1);
-        this.removeToken(token);
+        this.removeToken(token, true, at); // pulled into the result as it pops in
       } else {
         kept.push(token);
       }
@@ -690,6 +737,7 @@ export class CraftingScene extends Phaser.Scene {
     for (const token of kept) {
       const spot = this.findFreeSpot(at, token, placed);
       placed.push(spot);
+      token.tweenScale(1, 200);
       this.tweens.add({ targets: token, x: spot.x, y: spot.y, duration: 200, ease: 'Quad.easeOut' });
     }
   }
