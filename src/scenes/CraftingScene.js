@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { RecipeEngine } from '../engine/RecipeEngine.js';
 import { buildCookbook } from '../engine/Cookbook.js';
-import { combinationHints } from '../engine/Hints.js';
+import { combinationHints, isUsedUp } from '../engine/Hints.js';
 import recipesData from '../data/recipes.json';
 import itemsData from '../data/items.json';
 import { STARTING_ITEMS, REUSABLE_TYPES } from '../data/start.js';
@@ -102,7 +102,7 @@ export class CraftingScene extends Phaser.Scene {
     const saved = this.registry.get(WORKSPACE_REGISTRY_KEY) ?? [];
     this.registry.remove(WORKSPACE_REGISTRY_KEY);
     for (const { id, fx, fy } of saved) {
-      if (!this.itemsById.has(id) || !this.unlockedIngredients.has(id)) continue;
+      if (!this.itemsById.has(id) || !this.unlockedIngredients.has(id) || this.isUsedUp(id)) continue;
       const { x, y } = this.clampToWorkspace(this.ws.x + fx * this.ws.w, this.ws.y + fy * this.ws.h);
       this.spawnWorkspaceToken(id, x, y);
     }
@@ -205,7 +205,7 @@ export class CraftingScene extends Phaser.Scene {
       interceptPress: (id) => this.useHintOn(id),
     };
     this.storage = storage.kind === 'drawer' ? new StorageDrawer(this, storageOptions) : new Sidebar(this, storageOptions);
-    this.storage.refresh(this.unlockedIngredients);
+    this.storage.refresh(this.storageItems());
 
     this.reveal = new RevealCard(this, { depth: REVEAL_DEPTH });
 
@@ -234,6 +234,32 @@ export class CraftingScene extends Phaser.Scene {
     this.recipesButton.setLabel(`Recipes ${found}/${this.dishIds.size}`);
     this.hintButton.setX(this.recipesButton.x + this.recipesButton.ribbonWidth + 42);
     this.hint.setVisible(this.workspaceTokens.size === 0);
+  }
+
+  isUsedUp(itemId) {
+    return isUsedUp(itemId, recipesData, (rid) => this.discoveredRecipes.has(rid));
+  }
+
+  /** What the storage shows: unlocked items that still have combinations left to discover. */
+  storageItems() {
+    return new Set([...this.unlockedIngredients].filter((id) => !this.isUsedUp(id)));
+  }
+
+  /**
+   * Takes items with nothing left to discover off the table and the shelves. Only removes: new
+   * items still appear on the shelves when their reveal card closes. `keep` is a just-made result,
+   * which gets its moment on the table first (see retireResultSoon).
+   */
+  retireUsedUpItems(keep = null) {
+    for (const token of [...this.workspaceTokens]) {
+      if (token === keep || !this.isUsedUp(token.itemId)) continue;
+      this.tweens.killTweensOf(token);
+      this.removeToken(token, true);
+    }
+
+    const shown = [...this.storage.entries.keys()];
+    if (!shown.some((id) => this.isUsedUp(id))) return;
+    this.storage.refresh(new Set(shown.filter((id) => !this.isUsedUp(id))));
   }
 
   /** Tap on a storage item: drop a copy on the table near the middle, in a free spot. */
@@ -456,12 +482,15 @@ export class CraftingScene extends Phaser.Scene {
 
     const isNewRecipe = !this.discoveredRecipes.has(result.recipeId);
     this.discoveredRecipes.add(result.recipeId);
+    let resultToken = null;
     if (result.action === 'ADD_TO_INGREDIENTS') {
       const isNew = !this.unlockedIngredients.has(result.output);
       this.unlockedIngredients.add(result.output);
-      this.spawnResult(result.output, at);
+      resultToken = this.spawnResult(result.output, at);
       this.sfx.play('success');
       this.sfx.vibrate(25);
+      // Re-made something that has nothing left to discover: let it pop in, then take it away.
+      if (this.isUsedUp(result.output)) this.retireResultSoon(resultToken);
       if (isNew) {
         this.reveal.enqueue({
           banner: 'NEW!',
@@ -478,8 +507,18 @@ export class CraftingScene extends Phaser.Scene {
     }
 
     this.clearSlotsAfterCrafting([dropped, target], result.consumed, at);
+    this.retireUsedUpItems(resultToken);
     if (isNewRecipe) this.onNewDiscovery();
     this.saveProgress();
+  }
+
+  retireResultSoon(token) {
+    this.time.delayedCall(900, () => {
+      if (!this.workspaceTokens.has(token)) return;
+      this.floatText(token.x, token.y - 60, `Nothing left to make with ${token.item.name}`, '#a0522d');
+      this.tweens.killTweensOf(token);
+      this.removeToken(token, true);
+    });
   }
 
   /** Every new recipe counts toward the next hint and the next unlock. */
@@ -501,7 +540,7 @@ export class CraftingScene extends Phaser.Scene {
         footer: () => this.unlockTeaser(),
         onShow: () => this.sfx.play('chime'),
         onClose: () => {
-          this.storage.refresh(this.unlockedIngredients);
+          this.storage.refresh(this.storageItems());
           this.storage.revealEntry(id);
           this.time.delayedCall(300, () => this.storage.flashNew(id));
         },
@@ -526,7 +565,7 @@ export class CraftingScene extends Phaser.Scene {
   }
 
   animateToIngredientTab(itemId, from) {
-    this.storage.refresh(this.unlockedIngredients);
+    this.storage.refresh(this.storageItems());
     const target = this.storage.revealEntry(itemId);
 
     const ghost = new ItemToken(this, from.x, from.y, this.itemsById.get(itemId)).setDepth(FX_DEPTH);

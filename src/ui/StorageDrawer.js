@@ -7,6 +7,7 @@ import {
   SECTIONS,
   sectionIds,
   makeShelfToken,
+  retireShelfTokens,
   makeSectionHeader,
   drawPegboard,
   drawShelf,
@@ -103,8 +104,10 @@ export class StorageDrawer {
     return this.scrollers.get(key);
   }
 
-  refresh(unlocked) {
-    for (const id of unlocked) {
+  /** Shows exactly the items in `ids` (a Set): new ones are added, missing ones shrink away. */
+  refresh(ids) {
+    retireShelfTokens(this.scene, this.entries, ids);
+    for (const id of ids) {
       if (this.entries.has(id)) continue;
       const item = this.itemsById.get(id);
       if (!item) continue;
@@ -124,10 +127,10 @@ export class StorageDrawer {
       return o;
     };
 
-    const ids = [...this.entries.keys()];
+    const shown = [...this.entries.keys()];
     let y = this.rect.y + DRAWER_HEADER_H;
     for (const section of SECTIONS) {
-      const sectionItems = sectionIds(section, ids, this.itemsById);
+      const sectionItems = sectionIds(section, shown, this.itemsById);
       const header = makeSectionHeader(this.scene, {
         x: this.innerLeft,
         w: this.innerWidth,
@@ -165,7 +168,7 @@ export class StorageDrawer {
       if (!sectionItems.length) {
         track(
           this.scene.add
-            .text(this.innerLeft + this.innerWidth / 2, y + ICON_Y, 'Cook something to fill this shelf!', textStyle(15, 500, COLORS.inkSoft))
+            .text(this.innerLeft + this.innerWidth / 2, y + ICON_Y, section.empty, textStyle(15, 500, COLORS.inkSoft))
             .setOrigin(0.5)
             .setDepth(this.depth + L.items),
         );

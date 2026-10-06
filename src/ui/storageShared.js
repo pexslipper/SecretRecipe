@@ -9,13 +9,22 @@ const TOOLS_OPEN_KEY = 'secret-recipe-tools-open';
 const isRaw = (item) => item.type === 'base_ingredient';
 
 // The `pinned` section is Tools: it never scrolls away and can be opened/closed.
+// `empty` is shown on an empty shelf: Processed starts empty, the others only empty once everything is used up.
 export const SECTIONS = [
-  { key: 'tools', label: 'Tools', style: 'pegboard', pinned: true, filter: (item) => REUSABLE_TYPES.has(item.type) },
-  { key: 'raw', label: 'Raw Ingredients', style: 'shelf', filter: (item) => isRaw(item) },
+  {
+    key: 'tools',
+    label: 'Tools',
+    style: 'pegboard',
+    pinned: true,
+    empty: 'Every tool has done its job!',
+    filter: (item) => REUSABLE_TYPES.has(item.type),
+  },
+  { key: 'raw', label: 'Raw Ingredients', style: 'shelf', empty: 'All used up!', filter: (item) => isRaw(item) },
   {
     key: 'processed',
     label: 'Processed Ingredients',
     style: 'shelf',
+    empty: 'Cook something to fill this shelf!',
     filter: (item) => !REUSABLE_TYPES.has(item.type) && !isRaw(item),
   },
 ];
@@ -29,6 +38,21 @@ export function sectionIds(section, ids, itemsById) {
 
 export function makeShelfToken(scene, item, depth) {
   return new ItemToken(scene, 0, 0, item, { variant: 'shelf' }).setDepth(depth);
+}
+
+/** Removes shelf tokens whose id isn't in `ids` (items with nothing left to discover): they shrink away. */
+export function retireShelfTokens(scene, entries, ids) {
+  for (const [id, token] of entries) {
+    if (ids.has(id)) continue;
+    entries.delete(id);
+    token.setInputEnabled(false);
+    scene.tweens.killTweensOf(token);
+    if (!token.visible) {
+      token.destroy();
+      continue;
+    }
+    scene.tweens.add({ targets: token, scale: 0, alpha: 0, duration: 300, ease: 'Back.easeIn', onComplete: () => token.destroy() });
+  }
 }
 
 /** Section title row with dashed rule. With `toggle`, shows a caret + hide/show and is clickable. */

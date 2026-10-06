@@ -8,6 +8,11 @@ export function partnerCategory(item) {
   return 'processed';
 }
 
+/** True once every recipe the item is an input of has been discovered: there's nothing new left to try with it. */
+export function isUsedUp(itemId, recipes, isDiscovered) {
+  return recipes.every((recipe) => !recipe.inputs.includes(itemId) || isDiscovered(recipe.id));
+}
+
 /**
  * How many combinations an item takes part in, and how many the player has found, grouped by what
  * the other ingredient is (tool / raw / processed). A recipe of the item with itself counts in the

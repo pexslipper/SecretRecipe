@@ -7,6 +7,7 @@ import {
   SECTIONS,
   sectionIds,
   makeShelfToken,
+  retireShelfTokens,
   makeSectionHeader,
   drawPegboard,
   drawShelf,
@@ -116,9 +117,11 @@ export class Sidebar {
     this.gesture.begin(pointer, id, opts);
   }
 
-  refresh(unlocked) {
-    this.unlocked = unlocked;
-    for (const id of unlocked) {
+  /** Shows exactly the items in `ids` (a Set): new ones are added, missing ones shrink away. */
+  refresh(ids) {
+    this.ids = ids;
+    retireShelfTokens(this.scene, this.entries, ids);
+    for (const id of ids) {
       if (this.entries.has(id)) continue;
       const item = this.itemsById.get(id);
       if (!item) continue;
@@ -135,12 +138,12 @@ export class Sidebar {
     this.pinnedRows = [];
     this.rows = [];
 
-    const ids = [...this.entries.keys()];
+    const shown = [...this.entries.keys()];
     for (const section of SECTIONS) {
       const pinned = !!section.pinned;
       const decorDepth = this.depth + (pinned ? L.pinnedDecor : L.scrollDecor);
       const itemDepth = this.depth + (pinned ? L.pinnedItems : L.scrollItems);
-      const sectionItems = sectionIds(section, ids, this.itemsById);
+      const sectionItems = sectionIds(section, shown, this.itemsById);
 
       const header = makeSectionHeader(this.scene, {
         x: this.innerLeft,
@@ -184,7 +187,7 @@ export class Sidebar {
   toggleTools() {
     this.toolsOpen = !this.toolsOpen;
     saveToolsOpen(this.toolsOpen);
-    this.refresh(this.unlocked); // rebuilds the header so the caret flips
+    this.refresh(this.ids); // rebuilds the header so the caret flips
   }
 
   // ---------------------------------------------------------------- Layout & scrolling
