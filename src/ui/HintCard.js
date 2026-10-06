@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { COLORS, textStyle } from './theme.js';
+import { makeItemLabel } from './ItemLabel.js';
 
 const GROUPS = [
   { key: 'tool', label: 'Tools' },
@@ -86,7 +87,7 @@ export class HintCard {
     const lines = [];
 
     // Title: item and overall progress
-    const title = new Phaser.GameObjects.Text(scene, 0, 0, `${item.emoji ?? ''} ${item.name}`, textStyle(19, 700));
+    const title = makeItemLabel(scene, item, textStyle(19, 700), 32);
     const allDone = hints.found === hints.total;
     const overall = new Phaser.GameObjects.Text(
       scene, 0, 0,
@@ -134,7 +135,9 @@ export class HintCard {
       const lineH = Math.max(...parts.map((t) => t.height));
       let x = -lineWidths[i] / 2;
       for (const t of parts) {
-        t.setOrigin(0, 0.5).setPosition(x, y + lineH / 2);
+        // Item labels are containers, already anchored at their left-centre.
+        t.setOrigin?.(0, 0.5);
+        t.setPosition(x, y + lineH / 2);
         x += t.width + GAP;
         placed.push(t);
       }

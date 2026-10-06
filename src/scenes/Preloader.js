@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { SOUND_FILES, SOUND_EXTENSIONS } from '../audio/Sfx.js';
+import { ITEM_ATLAS } from '../ui/ItemToken.js';
 
 // Sound files can sit in public/assets/sounds/ or straight in public/assets/.
 const SOUND_FOLDERS = ['sounds/', ''];
@@ -40,9 +41,9 @@ export class Preloader extends Phaser.Scene {
   preload() {
     // Files in /public are served from the root, e.g. public/assets/logo.png -> 'assets/logo.png'
     this.load.setPath('assets');
-    // Item icons: load a texture keyed by the item's `icon` field in src/data/items.json
-    // and it replaces the emoji placeholder automatically, e.g.
-    // this.load.image('icon_meat', 'icons/meat.png');
+    // Item icons: one sprite sheet, with a frame per `icon` field in src/data/items.json.
+    // items.json is generated from items.png by `npm run atlas`; re-run it whenever the sheet changes.
+    this.load.atlas(ITEM_ATLAS, 'items.png', 'items.json');
   }
 
   async create() {

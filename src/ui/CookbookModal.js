@@ -1,5 +1,7 @@
+import Phaser from 'phaser';
 import { COLORS, textStyle } from './theme.js';
 import { makeRoundButton } from './Buttons.js';
+import { makeItemLabel, makeFlowRow } from './ItemLabel.js';
 import { PointerGesture } from './PointerGesture.js';
 import { KineticScroller, attachScroller } from './KineticScroller.js';
 import { CHAPTERS } from '../data/chapters.js';
@@ -16,6 +18,7 @@ const PARCHMENT = 0xfff8ec;
 const L = { page: 0, rows: 1, covers: 2, chrome: 3 };
 const DISH_ROW_H = 56;
 const STEP_ROW_H = 40;
+const STEP_GAP = 12;
 const GAP_ROW_H = 20;
 const CENSOR_COLOR = 0x2a1d14;
 
@@ -217,7 +220,10 @@ export class CookbookModal {
       const served = this.isDishServed(dishId);
       const found = steps.filter((r) => this.isRecipeDiscovered(r.id)).length;
 
-      const title = this.text(textX, `${dish.emoji ?? ''} ${dish.name}`, textStyle(this.compact ? 21 : 24, 700));
+      const title = this.addRow(
+        textX,
+        makeItemLabel(this.scene, dish, textStyle(this.compact ? 21 : 24, 700), this.compact ? 36 : 42),
+      );
       const status = this.text(
         this.left + this.panelW - (this.compact ? 28 : 40),
         served ? 'Served ✓' : `${found}/${steps.length} found`,
@@ -230,11 +236,7 @@ export class CookbookModal {
 
       steps.forEach((recipe, i) => {
         const number = this.text(textX + 8, `${i + 1}.`, textStyle(this.compact ? 16 : 18, 600, COLORS.inkSoft));
-        const line = this.text(
-          stepX,
-          this.describeStep(recipe),
-          textStyle(this.compact ? 17 : 19, 500, COLORS.ink, { wordWrap: { width: stepWrap } }),
-        );
+        const line = this.addRow(stepX, this.buildStep(recipe, stepWrap));
         // Long steps wrap on narrow screens, so the row grows to fit.
         const height = Math.max(STEP_ROW_H, line.height + 8);
         this.rows.push({
@@ -245,13 +247,20 @@ export class CookbookModal {
     });
   }
 
-  describeStep(recipe) {
+  /** "[icon] A  +  [icon] B  →  [icon] Out", wrapping onto more lines when it doesn't fit `maxWidth`. */
+  buildStep(recipe, maxWidth) {
+    const scene = this.scene;
+    const style = textStyle(this.compact ? 17 : 19, 500, COLORS.ink);
+    const iconSize = this.compact ? 28 : 32;
     const label = (id) => {
       const item = this.itemsById.get(id);
-      return item ? `${item.emoji ?? ''} ${item.name}` : id;
+      return item ? makeItemLabel(scene, item, style, iconSize) : new Phaser.GameObjects.Text(scene, 0, 0, id, style).setOrigin(0, 0.5);
     };
-    const [a, b] = recipe.inputs.map(label);
-    return `${a}   +   ${b}   →   ${label(recipe.output)}`;
+    // Each operator stays with the item after it, so a wrapped line never starts with a bare "+".
+    const withOp = (op, id) =>
+      makeFlowRow(scene, [new Phaser.GameObjects.Text(scene, 0, 0, op, style).setOrigin(0, 0.5), label(id)], { gap: STEP_GAP });
+    const [a, b] = recipe.inputs;
+    return makeFlowRow(scene, [label(a), withOp('+', b), withOp('→', recipe.output)], { maxWidth, gap: STEP_GAP });
   }
 
   /** Returns the text as-is, or a black bar of the same size in its place. */
@@ -268,6 +277,11 @@ export class CookbookModal {
 
   text(x, str, style) {
     return this.add(this.scene.add.text(x, 0, str, style).setOrigin(0, 0.5), L.rows);
+  }
+
+  /** Adds an item label / flow row (see ItemLabel.js) as a row piece at `x`. */
+  addRow(x, obj) {
+    return this.add(this.scene.add.existing(obj.setX(x)), L.rows);
   }
 
   rule() {

@@ -1,0 +1,1952 @@
+{
+ "frames": {
+  "icon_cut": {
+   "frame": {
+    "x": 23,
+    "y": 6,
+    "w": 191,
+    "h": 194
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 191,
+    "h": 194
+   },
+   "sourceSize": {
+    "w": 191,
+    "h": 194
+   }
+  },
+  "icon_mortar": {
+   "frame": {
+    "x": 273,
+    "y": 11,
+    "w": 163,
+    "h": 179
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 163,
+    "h": 179
+   },
+   "sourceSize": {
+    "w": 163,
+    "h": 179
+   }
+  },
+  "icon_grill": {
+   "frame": {
+    "x": 483,
+    "y": 14,
+    "w": 221,
+    "h": 171
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 221,
+    "h": 171
+   },
+   "sourceSize": {
+    "w": 221,
+    "h": 171
+   }
+  },
+  "icon_oven": {
+   "frame": {
+    "x": 751,
+    "y": 4,
+    "w": 197,
+    "h": 195
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 197,
+    "h": 195
+   },
+   "sourceSize": {
+    "w": 197,
+    "h": 195
+   }
+  },
+  "icon_pan": {
+   "frame": {
+    "x": 1003,
+    "y": 27,
+    "w": 239,
+    "h": 151
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 239,
+    "h": 151
+   },
+   "sourceSize": {
+    "w": 239,
+    "h": 151
+   }
+  },
+  "icon_pot": {
+   "frame": {
+    "x": 1270,
+    "y": 11,
+    "w": 222,
+    "h": 185
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 222,
+    "h": 185
+   },
+   "sourceSize": {
+    "w": 222,
+    "h": 185
+   }
+  },
+  "icon_meat": {
+   "frame": {
+    "x": 1529,
+    "y": 26,
+    "w": 220,
+    "h": 153
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 220,
+    "h": 153
+   },
+   "sourceSize": {
+    "w": 220,
+    "h": 153
+   }
+  },
+  "icon_chicken": {
+   "frame": {
+    "x": 1789,
+    "y": 12,
+    "w": 232,
+    "h": 183
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 183
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 183
+   }
+  },
+  "icon_pork": {
+   "frame": {
+    "x": 2058,
+    "y": 23,
+    "w": 197,
+    "h": 160
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 197,
+    "h": 160
+   },
+   "sourceSize": {
+    "w": 197,
+    "h": 160
+   }
+  },
+  "icon_flour": {
+   "frame": {
+    "x": 2303,
+    "y": 10,
+    "w": 190,
+    "h": 187
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 190,
+    "h": 187
+   },
+   "sourceSize": {
+    "w": 190,
+    "h": 187
+   }
+  },
+  "icon_water": {
+   "frame": {
+    "x": 2551,
+    "y": 15,
+    "w": 163,
+    "h": 174
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 163,
+    "h": 174
+   },
+   "sourceSize": {
+    "w": 163,
+    "h": 174
+   }
+  },
+  "icon_tomato": {
+   "frame": {
+    "x": 41,
+    "y": 214,
+    "w": 155,
+    "h": 151
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 155,
+    "h": 151
+   },
+   "sourceSize": {
+    "w": 155,
+    "h": 151
+   }
+  },
+  "icon_garlic": {
+   "frame": {
+    "x": 282,
+    "y": 213,
+    "w": 146,
+    "h": 153
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 146,
+    "h": 153
+   },
+   "sourceSize": {
+    "w": 146,
+    "h": 153
+   }
+  },
+  "icon_onion": {
+   "frame": {
+    "x": 510,
+    "y": 214,
+    "w": 141,
+    "h": 155
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 141,
+    "h": 155
+   },
+   "sourceSize": {
+    "w": 141,
+    "h": 155
+   }
+  },
+  "icon_chili": {
+   "frame": {
+    "x": 729,
+    "y": 239,
+    "w": 110,
+    "h": 104
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 110,
+    "h": 104
+   },
+   "sourceSize": {
+    "w": 110,
+    "h": 104
+   }
+  },
+  "icon_salt": {
+   "frame": {
+    "x": 913,
+    "y": 214,
+    "w": 98,
+    "h": 156
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 98,
+    "h": 156
+   },
+   "sourceSize": {
+    "w": 98,
+    "h": 156
+   }
+  },
+  "icon_rice": {
+   "frame": {
+    "x": 1068,
+    "y": 225,
+    "w": 175,
+    "h": 132
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 175,
+    "h": 132
+   },
+   "sourceSize": {
+    "w": 175,
+    "h": 132
+   }
+  },
+  "icon_egg": {
+   "frame": {
+    "x": 1324,
+    "y": 220,
+    "w": 114,
+    "h": 143
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 114,
+    "h": 143
+   },
+   "sourceSize": {
+    "w": 114,
+    "h": 143
+   }
+  },
+  "icon_sliced_meat": {
+   "frame": {
+    "x": 1523,
+    "y": 222,
+    "w": 231,
+    "h": 141
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 231,
+    "h": 141
+   },
+   "sourceSize": {
+    "w": 231,
+    "h": 141
+   }
+  },
+  "icon_dough": {
+   "frame": {
+    "x": 1806,
+    "y": 223,
+    "w": 198,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 198,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 198,
+    "h": 136
+   }
+  },
+  "icon_bread": {
+   "frame": {
+    "x": 2066,
+    "y": 229,
+    "w": 182,
+    "h": 126
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 182,
+    "h": 126
+   },
+   "sourceSize": {
+    "w": 182,
+    "h": 126
+   }
+  },
+  "icon_tomato_sauce": {
+   "frame": {
+    "x": 2580,
+    "y": 209,
+    "w": 104,
+    "h": 166
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 104,
+    "h": 166
+   },
+   "sourceSize": {
+    "w": 104,
+    "h": 166
+   }
+  },
+  "icon_raw_pizza": {
+   "frame": {
+    "x": 7,
+    "y": 384,
+    "w": 222,
+    "h": 151
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 222,
+    "h": 151
+   },
+   "sourceSize": {
+    "w": 222,
+    "h": 151
+   }
+  },
+  "icon_garlic_paste": {
+   "frame": {
+    "x": 299,
+    "y": 377,
+    "w": 110,
+    "h": 161
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 110,
+    "h": 161
+   },
+   "sourceSize": {
+    "w": 110,
+    "h": 161
+   }
+  },
+  "icon_chili_flakes": {
+   "frame": {
+    "x": 515,
+    "y": 402,
+    "w": 155,
+    "h": 114
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 155,
+    "h": 114
+   },
+   "sourceSize": {
+    "w": 155,
+    "h": 114
+   }
+  },
+  "icon_spice_rub": {
+   "frame": {
+    "x": 756,
+    "y": 402,
+    "w": 182,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 182,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 182,
+    "h": 112
+   }
+  },
+  "icon_spicy_sauce": {
+   "frame": {
+    "x": 1082,
+    "y": 375,
+    "w": 72,
+    "h": 165
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 72,
+    "h": 165
+   },
+   "sourceSize": {
+    "w": 72,
+    "h": 165
+   }
+  },
+  "icon_chopped_onion": {
+   "frame": {
+    "x": 1290,
+    "y": 392,
+    "w": 182,
+    "h": 134
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 182,
+    "h": 134
+   },
+   "sourceSize": {
+    "w": 182,
+    "h": 134
+   }
+  },
+  "icon_steamed_rice": {
+   "frame": {
+    "x": 1544,
+    "y": 381,
+    "w": 188,
+    "h": 152
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 188,
+    "h": 152
+   },
+   "sourceSize": {
+    "w": 188,
+    "h": 152
+   }
+  },
+  "icon_egg_rice": {
+   "frame": {
+    "x": 1807,
+    "y": 381,
+    "w": 195,
+    "h": 153
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 195,
+    "h": 153
+   },
+   "sourceSize": {
+    "w": 195,
+    "h": 153
+   }
+  },
+  "icon_diced_chicken": {
+   "frame": {
+    "x": 2047,
+    "y": 390,
+    "w": 220,
+    "h": 139
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 220,
+    "h": 139
+   },
+   "sourceSize": {
+    "w": 220,
+    "h": 139
+   }
+  },
+  "icon_seasoned_chicken": {
+   "frame": {
+    "x": 2287,
+    "y": 388,
+    "w": 220,
+    "h": 142
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 220,
+    "h": 142
+   },
+   "sourceSize": {
+    "w": 220,
+    "h": 142
+   }
+  },
+  "icon_chicken_broth": {
+   "frame": {
+    "x": 2539,
+    "y": 388,
+    "w": 185,
+    "h": 141
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 185,
+    "h": 141
+   },
+   "sourceSize": {
+    "w": 185,
+    "h": 141
+   }
+  },
+  "icon_garlic_pork": {
+   "frame": {
+    "x": 28,
+    "y": 555,
+    "w": 181,
+    "h": 133
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 181,
+    "h": 133
+   },
+   "sourceSize": {
+    "w": 181,
+    "h": 133
+   }
+  },
+  "icon_rubbed_pork": {
+   "frame": {
+    "x": 247,
+    "y": 552,
+    "w": 215,
+    "h": 138
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 215,
+    "h": 138
+   },
+   "sourceSize": {
+    "w": 215,
+    "h": 138
+   }
+  },
+  "icon_spicy_pork": {
+   "frame": {
+    "x": 484,
+    "y": 553,
+    "w": 216,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 216,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 216,
+    "h": 136
+   }
+  },
+  "icon_brine": {
+   "frame": {
+    "x": 791,
+    "y": 541,
+    "w": 112,
+    "h": 160
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 160
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 160
+   }
+  },
+  "icon_brined_chicken": {
+   "frame": {
+    "x": 1005,
+    "y": 552,
+    "w": 226,
+    "h": 142
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 226,
+    "h": 142
+   },
+   "sourceSize": {
+    "w": 226,
+    "h": 142
+   }
+  },
+  "icon_caramelized_onion": {
+   "frame": {
+    "x": 1290,
+    "y": 554,
+    "w": 182,
+    "h": 135
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 182,
+    "h": 135
+   },
+   "sourceSize": {
+    "w": 182,
+    "h": 135
+   }
+  },
+  "icon_fried_garlic": {
+   "frame": {
+    "x": 1552,
+    "y": 553,
+    "w": 174,
+    "h": 135
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 174,
+    "h": 135
+   },
+   "sourceSize": {
+    "w": 174,
+    "h": 135
+   }
+  },
+  "icon_salsa": {
+   "frame": {
+    "x": 1816,
+    "y": 556,
+    "w": 178,
+    "h": 132
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 178,
+    "h": 132
+   },
+   "sourceSize": {
+    "w": 178,
+    "h": 132
+   }
+  },
+  "icon_tortilla": {
+   "frame": {
+    "x": 2056,
+    "y": 551,
+    "w": 202,
+    "h": 142
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 202,
+    "h": 142
+   },
+   "sourceSize": {
+    "w": 202,
+    "h": 142
+   }
+  },
+  "icon_batter": {
+   "frame": {
+    "x": 2305,
+    "y": 552,
+    "w": 184,
+    "h": 139
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 184,
+    "h": 139
+   },
+   "sourceSize": {
+    "w": 184,
+    "h": 139
+   }
+  },
+  "icon_battered_chicken": {
+   "frame": {
+    "x": 2523,
+    "y": 551,
+    "w": 217,
+    "h": 141
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 217,
+    "h": 141
+   },
+   "sourceSize": {
+    "w": 217,
+    "h": 141
+   }
+  },
+  "icon_ground_beef": {
+   "frame": {
+    "x": 22,
+    "y": 716,
+    "w": 194,
+    "h": 138
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 194,
+    "h": 138
+   },
+   "sourceSize": {
+    "w": 194,
+    "h": 138
+   }
+  },
+  "icon_beef_patty": {
+   "frame": {
+    "x": 265,
+    "y": 725,
+    "w": 180,
+    "h": 122
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 180,
+    "h": 122
+   },
+   "sourceSize": {
+    "w": 180,
+    "h": 122
+   }
+  },
+  "icon_ground_pork": {
+   "frame": {
+    "x": 497,
+    "y": 715,
+    "w": 191,
+    "h": 140
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 191,
+    "h": 140
+   },
+   "sourceSize": {
+    "w": 191,
+    "h": 140
+   }
+  },
+  "icon_raw_dumplings": {
+   "frame": {
+    "x": 722,
+    "y": 720,
+    "w": 251,
+    "h": 135
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 251,
+    "h": 135
+   },
+   "sourceSize": {
+    "w": 251,
+    "h": 135
+   }
+  },
+  "icon_noodles": {
+   "frame": {
+    "x": 1016,
+    "y": 718,
+    "w": 205,
+    "h": 133
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 205,
+    "h": 133
+   },
+   "sourceSize": {
+    "w": 205,
+    "h": 133
+   }
+  },
+  "icon_beaten_eggs": {
+   "frame": {
+    "x": 1290,
+    "y": 717,
+    "w": 182,
+    "h": 134
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 182,
+    "h": 134
+   },
+   "sourceSize": {
+    "w": 182,
+    "h": 134
+   }
+  },
+  "icon_tomato_paste": {
+   "frame": {
+    "x": 1542,
+    "y": 714,
+    "w": 193,
+    "h": 142
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 193,
+    "h": 142
+   },
+   "sourceSize": {
+    "w": 193,
+    "h": 142
+   }
+  },
+  "icon_bolognese": {
+   "frame": {
+    "x": 1810,
+    "y": 713,
+    "w": 189,
+    "h": 144
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 189,
+    "h": 144
+   },
+   "sourceSize": {
+    "w": 189,
+    "h": 144
+   }
+  },
+  "icon_pasta_sheets": {
+   "frame": {
+    "x": 2055,
+    "y": 712,
+    "w": 202,
+    "h": 146
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 202,
+    "h": 146
+   },
+   "sourceSize": {
+    "w": 202,
+    "h": 146
+   }
+  },
+  "icon_raw_lasagna": {
+   "frame": {
+    "x": 2282,
+    "y": 710,
+    "w": 229,
+    "h": 152
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 229,
+    "h": 152
+   },
+   "sourceSize": {
+    "w": 229,
+    "h": 152
+   }
+  },
+  "icon_chili_oil": {
+   "frame": {
+    "x": 2579,
+    "y": 709,
+    "w": 106,
+    "h": 153
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 106,
+    "h": 153
+   },
+   "sourceSize": {
+    "w": 106,
+    "h": 153
+   }
+  },
+  "icon_beef_joint": {
+   "frame": {
+    "x": 12,
+    "y": 878,
+    "w": 213,
+    "h": 142
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 213,
+    "h": 142
+   },
+   "sourceSize": {
+    "w": 213,
+    "h": 142
+   }
+  },
+  "icon_pork_belly": {
+   "frame": {
+    "x": 260,
+    "y": 873,
+    "w": 188,
+    "h": 150
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 188,
+    "h": 150
+   },
+   "sourceSize": {
+    "w": 188,
+    "h": 150
+   }
+  },
+  "icon_rice_ball": {
+   "frame": {
+    "x": 513,
+    "y": 874,
+    "w": 158,
+    "h": 150
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 158,
+    "h": 150
+   },
+   "sourceSize": {
+    "w": 158,
+    "h": 150
+   }
+  },
+  "icon_steak": {
+   "frame": {
+    "x": 751,
+    "y": 884,
+    "w": 191,
+    "h": 130
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 191,
+    "h": 130
+   },
+   "sourceSize": {
+    "w": 191,
+    "h": 130
+   }
+  },
+  "icon_pizza": {
+   "frame": {
+    "x": 1004,
+    "y": 875,
+    "w": 229,
+    "h": 149
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 229,
+    "h": 149
+   },
+   "sourceSize": {
+    "w": 229,
+    "h": 149
+   }
+  },
+  "icon_garlic_bread": {
+   "frame": {
+    "x": 1287,
+    "y": 876,
+    "w": 186,
+    "h": 145
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 186,
+    "h": 145
+   },
+   "sourceSize": {
+    "w": 186,
+    "h": 145
+   }
+  },
+  "icon_tomato_soup": {
+   "frame": {
+    "x": 1542,
+    "y": 874,
+    "w": 195,
+    "h": 148
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 195,
+    "h": 148
+   },
+   "sourceSize": {
+    "w": 195,
+    "h": 148
+   }
+  },
+  "icon_fried_egg": {
+   "frame": {
+    "x": 1807,
+    "y": 884,
+    "w": 194,
+    "h": 130
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 194,
+    "h": 130
+   },
+   "sourceSize": {
+    "w": 194,
+    "h": 130
+   }
+  },
+  "icon_fried_rice": {
+   "frame": {
+    "x": 2046,
+    "y": 879,
+    "w": 222,
+    "h": 140
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 222,
+    "h": 140
+   },
+   "sourceSize": {
+    "w": 222,
+    "h": 140
+   }
+  },
+  "icon_grilled_chicken": {
+   "frame": {
+    "x": 2290,
+    "y": 870,
+    "w": 214,
+    "h": 145
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 214,
+    "h": 145
+   },
+   "sourceSize": {
+    "w": 214,
+    "h": 145
+   }
+  },
+  "icon_chicken_soup": {
+   "frame": {
+    "x": 2536,
+    "y": 874,
+    "w": 192,
+    "h": 147
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 192,
+    "h": 147
+   },
+   "sourceSize": {
+    "w": 192,
+    "h": 147
+   }
+  },
+  "icon_pork_stir_fry": {
+   "frame": {
+    "x": 19,
+    "y": 1041,
+    "w": 199,
+    "h": 149
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 199,
+    "h": 149
+   },
+   "sourceSize": {
+    "w": 199,
+    "h": 149
+   }
+  },
+  "icon_roast_pork": {
+   "frame": {
+    "x": 254,
+    "y": 1036,
+    "w": 202,
+    "h": 151
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 202,
+    "h": 151
+   },
+   "sourceSize": {
+    "w": 202,
+    "h": 151
+   }
+  },
+  "icon_spicy_pork_bbq": {
+   "frame": {
+    "x": 484,
+    "y": 1040,
+    "w": 215,
+    "h": 148
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 215,
+    "h": 148
+   },
+   "sourceSize": {
+    "w": 215,
+    "h": 148
+   }
+  },
+  "icon_boiled_egg": {
+   "frame": {
+    "x": 770,
+    "y": 1036,
+    "w": 154,
+    "h": 155
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 154,
+    "h": 155
+   },
+   "sourceSize": {
+    "w": 154,
+    "h": 155
+   }
+  },
+  "icon_onion_soup": {
+   "frame": {
+    "x": 1028,
+    "y": 1036,
+    "w": 183,
+    "h": 153
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 183,
+    "h": 153
+   },
+   "sourceSize": {
+    "w": 183,
+    "h": 153
+   }
+  },
+  "icon_garlic_rice": {
+   "frame": {
+    "x": 1289,
+    "y": 1037,
+    "w": 183,
+    "h": 149
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 183,
+    "h": 149
+   },
+   "sourceSize": {
+    "w": 183,
+    "h": 149
+   }
+  },
+  "icon_taco": {
+   "frame": {
+    "x": 1548,
+    "y": 1039,
+    "w": 183,
+    "h": 149
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 183,
+    "h": 149
+   },
+   "sourceSize": {
+    "w": 183,
+    "h": 149
+   }
+  },
+  "icon_pancakes": {
+   "frame": {
+    "x": 1798,
+    "y": 1036,
+    "w": 213,
+    "h": 155
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 213,
+    "h": 155
+   },
+   "sourceSize": {
+    "w": 213,
+    "h": 155
+   }
+  },
+  "icon_fried_chicken": {
+   "frame": {
+    "x": 2047,
+    "y": 1038,
+    "w": 220,
+    "h": 150
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 220,
+    "h": 150
+   },
+   "sourceSize": {
+    "w": 220,
+    "h": 150
+   }
+  },
+  "icon_roast_chicken": {
+   "frame": {
+    "x": 2296,
+    "y": 1035,
+    "w": 203,
+    "h": 155
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 203,
+    "h": 155
+   },
+   "sourceSize": {
+    "w": 203,
+    "h": 155
+   }
+  },
+  "icon_burger": {
+   "frame": {
+    "x": 2549,
+    "y": 1034,
+    "w": 165,
+    "h": 158
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 165,
+    "h": 158
+   },
+   "sourceSize": {
+    "w": 165,
+    "h": 158
+   }
+  },
+  "icon_dumplings": {
+   "frame": {
+    "x": 8,
+    "y": 1204,
+    "w": 221,
+    "h": 139
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 221,
+    "h": 139
+   },
+   "sourceSize": {
+    "w": 221,
+    "h": 139
+   }
+  },
+  "icon_ramen": {
+   "frame": {
+    "x": 256,
+    "y": 1199,
+    "w": 198,
+    "h": 157
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 198,
+    "h": 157
+   },
+   "sourceSize": {
+    "w": 198,
+    "h": 157
+   }
+  },
+  "icon_spaghetti": {
+   "frame": {
+    "x": 484,
+    "y": 1213,
+    "w": 216,
+    "h": 133
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 216,
+    "h": 133
+   },
+   "sourceSize": {
+    "w": 216,
+    "h": 133
+   }
+  },
+  "icon_omelette": {
+   "frame": {
+    "x": 736,
+    "y": 1207,
+    "w": 221,
+    "h": 143
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 221,
+    "h": 143
+   },
+   "sourceSize": {
+    "w": 221,
+    "h": 143
+   }
+  },
+  "icon_spaghetti_bolognese": {
+   "frame": {
+    "x": 1009,
+    "y": 1206,
+    "w": 218,
+    "h": 142
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 218,
+    "h": 142
+   },
+   "sourceSize": {
+    "w": 218,
+    "h": 142
+   }
+  },
+  "icon_lasagna": {
+   "frame": {
+    "x": 1271,
+    "y": 1203,
+    "w": 220,
+    "h": 149
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 220,
+    "h": 149
+   },
+   "sourceSize": {
+    "w": 220,
+    "h": 149
+   }
+  },
+  "icon_spicy_noodles": {
+   "frame": {
+    "x": 1543,
+    "y": 1205,
+    "w": 194,
+    "h": 148
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 194,
+    "h": 148
+   },
+   "sourceSize": {
+    "w": 194,
+    "h": 148
+   }
+  },
+  "icon_roast_beef": {
+   "frame": {
+    "x": 1793,
+    "y": 1204,
+    "w": 222,
+    "h": 148
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 222,
+    "h": 148
+   },
+   "sourceSize": {
+    "w": 222,
+    "h": 148
+   }
+  },
+  "icon_braised_pork": {
+   "frame": {
+    "x": 2058,
+    "y": 1204,
+    "w": 198,
+    "h": 150
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 198,
+    "h": 150
+   },
+   "sourceSize": {
+    "w": 198,
+    "h": 150
+   }
+  },
+  "icon_grilled_rice_ball": {
+   "frame": {
+    "x": 2318,
+    "y": 1202,
+    "w": 159,
+    "h": 152
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 159,
+    "h": 152
+   },
+   "sourceSize": {
+    "w": 159,
+    "h": 152
+   }
+  },
+  "icon_very_wet_water": {
+   "frame": {
+    "x": 16,
+    "y": 1377,
+    "w": 204,
+    "h": 151
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 204,
+    "h": 151
+   },
+   "sourceSize": {
+    "w": 204,
+    "h": 151
+   }
+  },
+  "icon_exploded_egg": {
+   "frame": {
+    "x": 262,
+    "y": 1371,
+    "w": 185,
+    "h": 158
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 185,
+    "h": 158
+   },
+   "sourceSize": {
+    "w": 185,
+    "h": 158
+   }
+  },
+  "icon_chicken_or_egg": {
+   "frame": {
+    "x": 511,
+    "y": 1367,
+    "w": 161,
+    "h": 168
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 161,
+    "h": 168
+   },
+   "sourceSize": {
+    "w": 161,
+    "h": 168
+   }
+  },
+  "icon_tears": {
+   "frame": {
+    "x": 752,
+    "y": 1364,
+    "w": 190,
+    "h": 171
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 190,
+    "h": 171
+   },
+   "sourceSize": {
+    "w": 190,
+    "h": 171
+   }
+  },
+  "icon_vampire_repellent": {
+   "frame": {
+    "x": 1031,
+    "y": 1365,
+    "w": 178,
+    "h": 167
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 178,
+    "h": 167
+   },
+   "sourceSize": {
+    "w": 178,
+    "h": 167
+   }
+  },
+  "icon_flour_cloud": {
+   "frame": {
+    "x": 1291,
+    "y": 1367,
+    "w": 179,
+    "h": 164
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 179,
+    "h": 164
+   },
+   "sourceSize": {
+    "w": 179,
+    "h": 164
+   }
+  },
+  "icon_salt_mountain": {
+   "frame": {
+    "x": 1527,
+    "y": 1376,
+    "w": 220,
+    "h": 150
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 220,
+    "h": 150
+   },
+   "sourceSize": {
+    "w": 220,
+    "h": 150
+   }
+  },
+  "icon_drum_solo": {
+   "frame": {
+    "x": 1799,
+    "y": 1372,
+    "w": 211,
+    "h": 159
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 211,
+    "h": 159
+   },
+   "sourceSize": {
+    "w": 211,
+    "h": 159
+   }
+  },
+  "icon_big_steam": {
+   "frame": {
+    "x": 2062,
+    "y": 1368,
+    "w": 189,
+    "h": 159
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 189,
+    "h": 159
+   },
+   "sourceSize": {
+    "w": 189,
+    "h": 159
+   }
+  },
+  "icon_dragon_egg": {
+   "frame": {
+    "x": 2564,
+    "y": 1365,
+    "w": 138,
+    "h": 169
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 138,
+    "h": 169
+   },
+   "sourceSize": {
+    "w": 138,
+    "h": 169
+   }
+  }
+ },
+ "meta": {
+  "image": "items.png",
+  "size": {
+   "w": 2752,
+   "h": 1536
+  },
+  "scale": "1"
+ }
+}

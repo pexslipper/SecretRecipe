@@ -29,6 +29,8 @@ const config = {
   backgroundColor: '#e9d5b7',
   disableContextMenu: true,
   input: { mouse: { preventDefaultWheel: true } },
+  // The item sprite sheet is drawn ~4x smaller than its source; mipmaps keep the icons smooth.
+  render: { mipmapFilter: 'LINEAR_MIPMAP_LINEAR' },
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,

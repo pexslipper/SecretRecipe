@@ -2,13 +2,35 @@ import Phaser from 'phaser';
 import { COLORS, TYPE_COLORS, textStyle } from './theme.js';
 
 export const TOKEN_RADIUS = 32;
+/** Texture key of the item sprite sheet (public/assets/items.png + items.json). */
+export const ITEM_ATLAS = 'items';
 const SHELF_LABEL_MAX_W = 94;
+
+/** Image for `item.icon` from the sprite sheet (or a standalone texture), or null if neither is loaded. */
+function iconImage(scene, item) {
+  if (scene.textures.exists(ITEM_ATLAS) && scene.textures.get(ITEM_ATLAS).has(item.icon)) {
+    return new Phaser.GameObjects.Image(scene, 0, 0, ITEM_ATLAS, item.icon);
+  }
+  if (scene.textures.exists(item.icon)) return new Phaser.GameObjects.Image(scene, 0, 0, item.icon);
+  return null;
+}
+
+/** The item's icon fitted into a `size` box centred on (0, 0), or its emoji when no image is loaded. */
+export function makeItemIcon(scene, item, size) {
+  const image = iconImage(scene, item);
+  // Frames aren't square: fit the longest side so nothing gets stretched.
+  if (image) return image.setScale(size / Math.max(image.width, image.height));
+  return new Phaser.GameObjects.Text(scene, 0, 0, item.emoji ?? '?', {
+    fontSize: Math.round(size / 1.3),
+    padding: { y: 8 },
+  }).setOrigin(0.5);
+}
 
 /**
  * Visual for one item.
  * - `workspace` variant: cream disc with a soft shadow, type-coloured ring and a name label underneath.
  * - `shelf` variant: just the icon, sitting on a sidebar shelf, with the name printed on the shelf board.
- * Uses the texture keyed by `item.icon` when it has been loaded, otherwise the emoji placeholder.
+ * Uses the `item.icon` frame of the item sprite sheet when it has been loaded, otherwise the emoji placeholder.
  * Input is attached to `this.hit` rather than the container.
  */
 export class ItemToken extends Phaser.GameObjects.Container {
@@ -34,18 +56,7 @@ export class ItemToken extends Phaser.GameObjects.Container {
       : parts[parts.length - 1];
     if (shelf) parts.push(hit);
 
-    const iconSize = shelf ? 42 : 32;
-    let icon;
-    if (scene.textures.exists(item.icon)) {
-      icon = new Phaser.GameObjects.Image(scene, 0, 0, item.icon);
-      icon.setDisplaySize(iconSize * 1.3, iconSize * 1.3);
-    } else {
-      icon = new Phaser.GameObjects.Text(scene, 0, 0, item.emoji ?? '?', {
-        fontSize: iconSize,
-        padding: { y: 8 },
-      }).setOrigin(0.5);
-    }
-    parts.push(icon);
+    parts.push(makeItemIcon(scene, item, (shelf ? 42 : 32) * 1.3));
 
     const label = new Phaser.GameObjects.Text(
       scene,
