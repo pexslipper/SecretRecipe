@@ -59,8 +59,12 @@ export class CookbookModal {
   open() {
     if (this.isOpen) return;
     const { width, height } = this.scene.scale;
-    const PANEL_W = Math.min(MAX_PANEL_W, width - 32);
-    const PANEL_H = Math.min(MAX_PANEL_H, height - 64);
+    // Portrait screens get the whole screen; landscape keeps a centred book.
+    const fullScreen = height > width;
+    const PANEL_W = fullScreen ? width : Math.min(MAX_PANEL_W, width - 32);
+    const PANEL_H = fullScreen ? height : Math.min(MAX_PANEL_H, height - 64);
+    const frameR = fullScreen ? 0 : 20;
+    const pageR = fullScreen ? 0 : 12;
     this.panelW = PANEL_W;
     this.compact = PANEL_W < 640;
     this.left = (width - PANEL_W) / 2;
@@ -86,19 +90,20 @@ export class CookbookModal {
 
     // Wooden frame around a parchment page
     const frame = this.add(this.scene.add.graphics());
-    frame.fillStyle(0x000000, 0.18).fillRoundedRect(this.left + 4, this.top + 8, PANEL_W, PANEL_H, 20);
-    frame.fillStyle(COLORS.woodDark).fillRoundedRect(this.left, this.top, PANEL_W, PANEL_H, 20);
-    frame.lineStyle(3, COLORS.woodEdge).strokeRoundedRect(this.left, this.top, PANEL_W, PANEL_H, 20);
-    frame.fillStyle(PARCHMENT).fillRoundedRect(this.left + 12, this.top + 12, PANEL_W - 24, PANEL_H - 24, 12);
-    frame.lineStyle(2, 0xe6cfa8).strokeRoundedRect(this.left + 12, this.top + 12, PANEL_W - 24, PANEL_H - 24, 12);
+    if (!fullScreen) frame.fillStyle(0x000000, 0.18).fillRoundedRect(this.left + 4, this.top + 8, PANEL_W, PANEL_H, frameR);
+    frame.fillStyle(COLORS.woodDark).fillRoundedRect(this.left, this.top, PANEL_W, PANEL_H, frameR);
+    frame.lineStyle(3, COLORS.woodEdge).strokeRoundedRect(this.left, this.top, PANEL_W, PANEL_H, frameR);
+    frame.fillStyle(PARCHMENT).fillRoundedRect(this.left + 12, this.top + 12, PANEL_W - 24, PANEL_H - 24, pageR);
+    frame.lineStyle(2, 0xe6cfa8).strokeRoundedRect(this.left + 12, this.top + 12, PANEL_W - 24, PANEL_H - 24, pageR);
 
     // Parchment covers over the header and footer: rows scrolling past the edges slide under these.
     const covers = this.add(this.scene.add.graphics(), L.covers);
     const coverX = this.left + PAGE_INSET;
     const coverW = PANEL_W - PAGE_INSET * 2;
     covers.fillStyle(PARCHMENT);
-    covers.fillRoundedRect(coverX, this.top + PAGE_INSET, coverW, this.contentTop - this.top - PAGE_INSET, { tl: 11, tr: 11, bl: 0, br: 0 });
-    covers.fillRoundedRect(coverX, this.contentBottom, coverW, this.top + PANEL_H - PAGE_INSET - this.contentBottom, { tl: 0, tr: 0, bl: 11, br: 11 });
+    const coverR = Math.max(0, pageR - 1);
+    covers.fillRoundedRect(coverX, this.top + PAGE_INSET, coverW, this.contentTop - this.top - PAGE_INSET, { tl: coverR, tr: coverR, bl: 0, br: 0 });
+    covers.fillRoundedRect(coverX, this.contentBottom, coverW, this.top + PANEL_H - PAGE_INSET - this.contentBottom, { tl: 0, tr: 0, bl: coverR, br: coverR });
     covers.fillStyle(0x000000, 0.06).fillRect(coverX, this.contentBottom, coverW, 3);
     covers.fillStyle(0x000000, 0.06).fillRect(coverX, this.contentTop - 3, coverW, 3);
 
