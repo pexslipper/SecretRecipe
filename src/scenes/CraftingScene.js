@@ -6,7 +6,9 @@ import recipesData from '../data/recipes.json';
 import itemsData from '../data/items.json';
 import { STARTING_ITEMS, REUSABLE_TYPES } from '../data/start.js';
 import { unlocksDue, nextUnlock } from '../data/unlocks.js';
-import { CHAPTERS_BY_KEY, chapterDishes } from '../data/chapters.js';
+import { CHAPTERS, CHAPTERS_BY_KEY, chapterDishes } from '../data/chapters.js';
+import { loadSave, writeSave, resetGame, WORKSPACE_REGISTRY_KEY, CONGRATS_SEEN_KEY } from '../data/save.js';
+import { addPlayTime } from '../engine/PlayClock.js';
 import { HintBank } from '../engine/HintBank.js';
 import { Sfx } from '../audio/Sfx.js';
 import { RevealCard } from '../ui/RevealCard.js';
@@ -21,8 +23,7 @@ import { COLORS, textStyle } from '../ui/theme.js';
 import { layoutFor } from '../ui/layout.js';
 import { loadToolsOpen } from '../ui/storageShared.js';
 
-const SAVE_KEY = 'secret-recipe-save-v1';
-const WORKSPACE_REGISTRY_KEY = 'workspace-tokens';
+const AUTOSAVE_MS = 5000; // keeps the saved play time fresh
 const COMBINE_DISTANCE = TOKEN_RADIUS * 1.6;
 const DOUBLE_CLICK_MS = 300;
 const LIFT_SCALE = 1.15; // held item
@@ -53,7 +54,7 @@ export class CraftingScene extends Phaser.Scene {
   init() {
     this.workspaceTokens = new Set();
     this.dragging = null;
-    this.skipWorkspaceSave = false;
+    this.resetting = false;
     this.hintMode = false;
     this.hintCardFresh = false;
     this.zCounter = 1;
@@ -71,6 +72,10 @@ export class CraftingScene extends Phaser.Scene {
     this.setupInput();
     this.restoreWorkspace();
     this.watchResize();
+    this.watchPageLeave();
+
+    // A finished game opens on the congratulations page (until the player chooses to look around).
+    if (this.isComplete() && !this.registry.get(CONGRATS_SEEN_KEY)) this.showCongrats();
   }
 
   // ---------------------------------------------------------------- Layout changes
@@ -83,7 +88,9 @@ export class CraftingScene extends Phaser.Scene {
     this.scale.on('resize', onResize);
     this.events.once('shutdown', () => {
       this.scale.off('resize', onResize);
-      if (!this.skipWorkspaceSave) this.saveWorkspace();
+      if (this.resetting) return;
+      this.saveWorkspace();
+      this.saveProgress();
     });
   }
 
@@ -417,8 +424,11 @@ export class CraftingScene extends Phaser.Scene {
     this.sfx.play('pop');
   }
 
-  /** While dragging, the held item leans into its movement and eases upright when it slows. */
   update(_time, delta) {
+    // The play timer runs while the kitchen is open, and stops for good once everything is collected.
+    if (!this.isComplete()) this.playMs = addPlayTime(this.playMs, delta);
+
+    // While dragging, the held item leans into its movement and eases upright when it slows.
     const drag = this.dragging;
     if (!drag) return;
     drag.tilt *= Math.pow(0.8, delta / 16.7);
@@ -690,6 +700,19 @@ export class CraftingScene extends Phaser.Scene {
         onShow: () => this.sfx.play('fanfare'),
       });
     }
+
+    if (this.isComplete()) {
+      this.saveProgress(); // the play timer has just stopped
+      this.reveal.enqueue({
+        banner: 'YOU DID IT!',
+        bannerColor: 0xd4a017,
+        icon: '🏆',
+        title: 'Every recipe collected!',
+        desc: `All ${this.dishIds.size} recipes are in your Recipe Book.`,
+        onShow: () => this.sfx.play('fanfare'),
+        onClose: () => this.showCongrats(),
+      });
+    }
   }
 
   /** Two items that don't make anything: both wiggle "no", and the dropped one bounces off to a free spot. */
@@ -803,18 +826,15 @@ export class CraftingScene extends Phaser.Scene {
     this.unlockedIngredients = new Set(STARTING_ITEMS);
     this.servedDishes = new Set();
     this.discoveredRecipes = new Set();
-    let saved = null;
-    try {
-      saved = JSON.parse(localStorage.getItem(SAVE_KEY));
-      if (saved) {
-        saved.unlocked?.forEach((id) => this.unlockedIngredients.add(id));
-        saved.served?.forEach((id) => this.servedDishes.add(id));
-        saved.recipes?.forEach((id) => this.discoveredRecipes.add(id));
-      }
-    } catch {
-      // Storage unavailable or corrupt: start fresh.
+    // Storage unavailable or corrupt: start fresh.
+    const saved = loadSave();
+    if (saved) {
+      saved.unlocked?.forEach((id) => this.unlockedIngredients.add(id));
+      saved.served?.forEach((id) => this.servedDishes.add(id));
+      saved.recipes?.forEach((id) => this.discoveredRecipes.add(id));
     }
     this.hintBank = HintBank.fromSave(saved?.hints, Date.now());
+    this.playMs = Number(saved?.playMs) || 0;
 
     // Saves from before recipe tracking: count a recipe as found if its output was ever made.
     const starting = new Set(STARTING_ITEMS);
@@ -830,29 +850,64 @@ export class CraftingScene extends Phaser.Scene {
   }
 
   saveProgress() {
-    try {
-      localStorage.setItem(
-        SAVE_KEY,
-        JSON.stringify({
-          unlocked: [...this.unlockedIngredients],
-          served: [...this.servedDishes],
-          recipes: [...this.discoveredRecipes],
-          hints: this.hintBank.toSave(),
-        }),
-      );
-    } catch {
-      // Ignore: progress just won't persist.
-    }
+    if (this.resetting) return;
+    writeSave({
+      unlocked: [...this.unlockedIngredients],
+      served: [...this.servedDishes],
+      recipes: [...this.discoveredRecipes],
+      hints: this.hintBank.toSave(),
+      playMs: Math.round(this.playMs),
+    });
+  }
+
+  /** Saves when the player leaves the page (tab switch, close, phone lock) and every few seconds, for the play timer. */
+  watchPageLeave() {
+    const save = () => this.saveProgress();
+    this.game.events.on(Phaser.Core.Events.HIDDEN, save);
+    window.addEventListener('pagehide', save);
+    this.time.addEvent({ delay: AUTOSAVE_MS, loop: true, callback: save });
+    this.events.once('shutdown', () => {
+      this.game.events.off(Phaser.Core.Events.HIDDEN, save);
+      window.removeEventListener('pagehide', save);
+    });
   }
 
   resetProgress() {
     if (!window.confirm('Reset all progress?')) return;
-    try {
-      localStorage.removeItem(SAVE_KEY);
-    } catch {
-      // Ignore.
-    }
-    this.skipWorkspaceSave = true; // a reset also clears the table
+    resetGame(this.registry); // progress, play time and the table
+    this.resetting = true; // nothing is saved on the way out
     this.scene.restart();
+  }
+
+  // ---------------------------------------------------------------- The end
+
+  /** Every dish and disaster in the Recipe Book has been served. */
+  isComplete() {
+    return [...this.dishIds].every((id) => this.servedDishes.has(id));
+  }
+
+  /** Numbers for the congratulations page. */
+  summary() {
+    const dishIds = [...this.dishIds];
+    const served = (ids) => ids.filter((id) => this.servedDishes.has(id)).length;
+    const ofType = (type) => dishIds.filter((id) => this.itemsById.get(id).type === type);
+    return {
+      playMs: this.playMs,
+      chapters: CHAPTERS.map((chapter) => {
+        const ids = chapterDishes(chapter.key, this.dishIds, this.itemsById);
+        return { key: chapter.key, served: served(ids), total: ids.length };
+      }).filter((c) => c.total > 0),
+      recipes: served(dishIds),
+      recipesTotal: dishIds.length,
+      dishes: served(ofType('final_dish')),
+      disasters: served(ofType('joke')),
+      combos: this.discoveredRecipes.size,
+      combosTotal: recipesData.length,
+    };
+  }
+
+  showCongrats() {
+    this.saveProgress();
+    this.scene.start('Congrats', this.summary());
   }
 }

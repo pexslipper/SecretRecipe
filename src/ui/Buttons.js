@@ -33,6 +33,31 @@ export function makeRoundButton(scene, x, y, radius, label, { color, darkColor, 
   return container;
 }
 
+/** Glossy pill-shaped button in the same candy style, for labels too long for a round button. */
+export function makePillButton(scene, x, y, label, { color, darkColor, onClick, fontSize = 22, minWidth = 170, height = 56 }) {
+  const darkHex = `#${darkColor.toString(16).padStart(6, '0')}`;
+  const text = new Phaser.GameObjects.Text(
+    scene, 0, 1, label,
+    textStyle(fontSize, 700, '#ffffff', { stroke: darkHex, strokeThickness: 4 }),
+  ).setOrigin(0.5);
+  const w = Math.max(minWidth, text.width + 52);
+  const h = height;
+  const r = h / 2;
+
+  const g = new Phaser.GameObjects.Graphics(scene);
+  g.fillStyle(0x000000, 0.12).fillRoundedRect(-w / 2, -h / 2 + 6, w, h, r);
+  g.fillStyle(darkColor).fillRoundedRect(-w / 2, -h / 2 + 3, w, h, r);
+  g.fillStyle(color).fillRoundedRect(-w / 2 + 1, -h / 2, w - 2, h - 2, r - 1);
+  g.fillStyle(0xffffff, 0.28).fillRoundedRect(-w / 2 + 14, -h / 2 + 5, w - 28, h * 0.32, h * 0.16);
+  g.lineStyle(2, 0xffffff, 0.5).strokeRoundedRect(-w / 2 + 1, -h / 2, w - 2, h - 2, r - 1);
+
+  const hit = new Phaser.GameObjects.Zone(scene, 0, 0, w, h);
+  const container = scene.add.container(x, y, [g, text, hit]);
+  container.buttonWidth = w;
+  wireHover(scene, container, hit, onClick);
+  return container;
+}
+
 const RIBBON_LEFT = 30;
 const RIBBON_TEXT_PAD = 26;
 const RIBBON_TAIL = 28;
