@@ -564,7 +564,7 @@ export class CraftingScene extends Phaser.Scene {
       this.animateServeAndDisappear(result.output, at);
     }
 
-    this.clearSlotsAfterCrafting([dropped, target], result.consumed, at);
+    this.clearSlotsAfterCrafting([dropped, target], at);
     this.retireUsedUpItems(resultToken);
     if (isNewRecipe) this.onNewDiscovery();
     this.saveProgress();
@@ -738,31 +738,11 @@ export class CraftingScene extends Phaser.Scene {
   }
 
   /**
-   * Removes consumed copies from the workspace. Tools and stations always stay,
-   * and are nudged aside so they don't sit under the result.
+   * After a successful combination both inputs leave the table — tools and stations too — pulled
+   * into the result as it pops in, so only the result is left. Tools stay in storage for next time.
    */
-  clearSlotsAfterCrafting(tokens, consumedList = [], at) {
-    const remaining = [...consumedList];
-    const kept = [];
-
-    for (const token of tokens) {
-      const reusable = REUSABLE_TYPES.has(token.item.type);
-      const idx = remaining.indexOf(token.itemId);
-      if (!reusable && idx !== -1) {
-        remaining.splice(idx, 1);
-        this.removeToken(token, true, at); // pulled into the result as it pops in
-      } else {
-        kept.push(token);
-      }
-    }
-
-    const placed = [];
-    for (const token of kept) {
-      const spot = this.findFreeSpot(at, token, placed);
-      placed.push(spot);
-      token.tweenScale(1, 200);
-      this.tweens.add({ targets: token, x: spot.x, y: spot.y, duration: 200, ease: 'Quad.easeOut' });
-    }
+  clearSlotsAfterCrafting(tokens, at) {
+    for (const token of tokens) this.removeToken(token, true, at);
   }
 
   /** Finds a position near `at` that doesn't overlap other workspace tokens or the result at `at`. */
