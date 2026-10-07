@@ -1,5 +1,6 @@
 import { drawPlank } from './KitchenBackdrop.js';
 import { COLORS, textStyle } from './theme.js';
+import { t } from '../i18n/lang.js';
 import { SECTION_H, TOOL_ROW_H, SHELF_ROW_H } from './layout.js';
 import { PointerGesture } from './PointerGesture.js';
 import { KineticScroller, attachScroller } from './KineticScroller.js';
@@ -93,7 +94,7 @@ export class Sidebar {
 
     drawPlank(scene, this.x, this.y, this.width, HEADER_HEIGHT).setDepth(depth + L.frame);
     scene.add
-      .text(this.x + this.width / 2, this.y + HEADER_HEIGHT / 2 - 2, 'My Kitchen Storage!', textStyle(26, 700))
+      .text(this.x + this.width / 2, this.y + HEADER_HEIGHT / 2 - 2, t('storage.title'), textStyle(26, 700))
       .setOrigin(0.5)
       .setDepth(depth + L.frame);
     this.moreHint = scene.add
@@ -144,7 +145,7 @@ export class Sidebar {
       const header = makeSectionHeader(this.scene, {
         x: this.innerLeft,
         w: this.innerWidth,
-        text: `${section.label} (${sectionItems.length})`,
+        text: `${t(section.label)} (${sectionItems.length})`,
         depth: decorDepth,
         toggle: pinned ? { open: this.toolsOpen, onToggle: () => this.toggleTools() } : null,
       });
@@ -237,7 +238,7 @@ export class Sidebar {
     const hints = [];
     if (this.scroller.pos > 1) hints.push('▲');
     if (this.scroller.pos < this.scroller.max - 1) hints.push('▼');
-    this.moreHint.setText(hints.length ? `${hints.join(' ')}  scroll for more` : '');
+    this.moreHint.setText(hints.length ? `${hints.join(' ')}  ${t('scroll.more')}` : '');
   }
 
   place(row, top, visible, viewTop = null) {

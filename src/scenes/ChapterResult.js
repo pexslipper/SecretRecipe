@@ -6,9 +6,9 @@ import { MOODS, LEAVING_POSE } from '../ui/CustomerCounter.js';
 import { CUSTOMER_TEXTURE, CUSTOMER_FRAME_H, customerFrame } from '../ui/CustomerSprites.js';
 import { COLORS, textStyle } from '../ui/theme.js';
 import { startMusic } from '../audio/Music.js';
+import { t, localizedItems, levelName } from '../i18n/lang.js';
 import { LEVELS, CUSTOMERS_PER_LEVEL } from '../data/levels.js';
 import { isLevelOpen } from '../engine/Orders.js';
-import itemsData from '../data/items.json';
 
 const MAX_PANEL_W = 560;
 const PAD = 28;
@@ -27,7 +27,7 @@ export class ChapterResult extends Phaser.Scene {
 
   create(data) {
     this.result = data;
-    this.itemsById = new Map(itemsData.map((item) => [item.id, item]));
+    this.itemsById = new Map(localizedItems().map((item) => [item.id, item]));
     const { width, height } = this.scale;
     startMusic(this);
 
@@ -53,7 +53,6 @@ export class ChapterResult extends Phaser.Scene {
   /** Builds the card top-down in a container centred on x = 0 with its top at y = 0. */
   buildPanel(panelW) {
     const d = this.result;
-    const level = LEVELS[d.level];
     const inner = panelW - PAD * 2;
     const left = -inner / 2;
     const c = this.add.container(0, 0);
@@ -64,9 +63,9 @@ export class ChapterResult extends Phaser.Scene {
     const text = (x, y, str, style, origin = 0.5) => add(this.add.text(x, y, str, style).setOrigin(origin, 0));
     let y = PAD + 6;
 
-    text(0, y, `Chapter ${d.level + 1} · ${level.name}`, textStyle(18, 600, COLORS.inkSoft));
+    text(0, y, t('result.subtitle', { n: d.level + 1, name: levelName(d.level) }), textStyle(18, 600, COLORS.inkSoft));
     y += 28;
-    const headline = d.stars === CUSTOMERS_PER_LEVEL ? 'Perfect service!' : d.stars > 0 ? 'Chapter complete!' : 'Nobody was happy…';
+    const headline = t(d.stars === CUSTOMERS_PER_LEVEL ? 'result.perfect' : d.stars > 0 ? 'result.complete' : 'result.none');
     y += text(0, y, headline, textStyle(panelW < 420 ? 32 : 38, 700)).height + 6;
 
     // Big stars, popping in one by one
@@ -80,7 +79,7 @@ export class ChapterResult extends Phaser.Scene {
     }
     y += 64;
     if (d.newBest) {
-      const best = text(0, y, '🏅 New best!', textStyle(18, 700, '#b07d00'));
+      const best = text(0, y, t('result.newBest'), textStyle(18, 700, '#b07d00'));
       this.tweens.add({ targets: best, scale: 1.12, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
       y += 30;
     }
@@ -101,10 +100,10 @@ export class ChapterResult extends Phaser.Scene {
       });
       const name = order.map((id) => this.itemsById.get(id).name).join(' + ');
       const nameX = left + 90 + order.length * 40 - 14;
-      const nameText = text(nameX, cy - 13, name, textStyle(16, 600, COLORS.ink), 0);
+      const nameText = add(this.add.text(nameX, cy - 2, name, textStyle(16, 600, COLORS.ink)).setOrigin(0, 0.5));
       const mood = MOODS[result];
       const earned = result === 'happy' || result === 'impatient';
-      const moodText = add(this.add.text(left + inner - 12, cy - 2, `${mood.face} ${mood.label}${earned ? ' ⭐' : ''}`, textStyle(15, 700, earned ? '#5a9a3c' : '#c0632d')).setOrigin(1, 0.5));
+      const moodText = add(this.add.text(left + inner - 12, cy - 2, `${mood.face} ${t(`mood.${result}`)}${earned ? ' ⭐' : ''}`, textStyle(15, 700, earned ? '#5a9a3c' : '#c0632d')).setOrigin(1, 0.5));
       const room = moodText.x - moodText.width - 10 - nameX;
       if (nameText.width > room) nameText.setScale(Math.max(0.5, room / nameText.width));
       y += ROW_H;
@@ -114,15 +113,15 @@ export class ChapterResult extends Phaser.Scene {
     // After the last chapter: the grand total
     if (d.level === LEVELS.length - 1) {
       const total = LEVELS.reduce((sum, _, i) => sum + (d.bestStars[i] ?? 0), 0);
-      y += text(0, y, `🏆 All chapters: ⭐ ${total} / ${LEVELS.length * CUSTOMERS_PER_LEVEL}`, textStyle(20, 700, '#8a5a00')).height + 8;
+      y += text(0, y, t('result.total', { stars: total, max: LEVELS.length * CUSTOMERS_PER_LEVEL }), textStyle(20, 700, '#8a5a00')).height + 8;
     }
 
     // Buttons
     const hasNext = d.level < LEVELS.length - 1 && isLevelOpen(d.level + 1, d.bestStars);
     const buttons = [
-      { label: 'Retry', color: 0xf2c44f, darkColor: 0xc9952e, onClick: () => this.scene.start('CraftingScene', { level: d.level }) },
-      ...(hasNext ? [{ label: 'Next ▶', color: 0x8cc474, darkColor: 0x5f9a4a, onClick: () => this.scene.start('CraftingScene', { level: d.level + 1 }) }] : []),
-      { label: 'Chapters', color: 0x72bdbd, darkColor: 0x4f9799, onClick: () => this.scene.start('ChapterSelect') },
+      { label: t('result.retry'), color: 0xf2c44f, darkColor: 0xc9952e, onClick: () => this.scene.start('CraftingScene', { level: d.level }) },
+      ...(hasNext ? [{ label: t('result.next'), color: 0x8cc474, darkColor: 0x5f9a4a, onClick: () => this.scene.start('CraftingScene', { level: d.level + 1 }) }] : []),
+      { label: t('result.chapters'), color: 0x72bdbd, darkColor: 0x4f9799, onClick: () => this.scene.start('ChapterSelect') },
     ];
     const sideBySide = inner >= 150 * buttons.length;
     if (sideBySide) {

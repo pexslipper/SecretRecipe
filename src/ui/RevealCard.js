@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { ItemToken } from './ItemToken.js';
 import { COLORS, textStyle } from './theme.js';
+import { t } from '../i18n/lang.js';
 
 const AUTO_CLOSE_MS = 4000;
 // Ignore taps for a moment so the press that caused the discovery can't skip its card.
@@ -59,7 +60,7 @@ export class RevealCard {
     const footer = footerText
       ? new Phaser.GameObjects.Text(scene, 0, 0, footerText, textStyle(16, 600, '#5a8fc4', wrap)).setOrigin(0.5, 0)
       : null;
-    const prompt = new Phaser.GameObjects.Text(scene, 0, 0, `${touch ? 'Tap' : 'Click'} to continue`, textStyle(14, 500, COLORS.inkSoft)).setOrigin(0.5, 0);
+    const prompt = new Phaser.GameObjects.Text(scene, 0, 0, t(touch ? 'reveal.continue.touch' : 'reveal.continue.mouse'), textStyle(14, 500, COLORS.inkSoft)).setOrigin(0.5, 0);
 
     const TOKEN_Y = 0;
     let y = TOKEN_Y + 78;

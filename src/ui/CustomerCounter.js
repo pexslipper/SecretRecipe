@@ -3,6 +3,7 @@ import { COLORS, textStyle } from './theme.js';
 import { makeItemLabel } from './ItemLabel.js';
 import { moodAt, moodColor } from '../engine/Orders.js';
 import { HAPPY_ABOVE, ANGRY_BELOW } from '../data/levels.js';
+import { t } from '../i18n/lang.js';
 import { CUSTOMER_TEXTURE, CUSTOMER_FRAME_W, CUSTOMER_FRAME_H, customerFrame, characterHeight } from './CustomerSprites.js';
 
 const PLANK_H = 20;
@@ -15,11 +16,12 @@ const WALK_MS = 520;
 const SIGN_W = 132;
 const SIGN_H = 50;
 
+// Each mood's face; its name is the `mood.<key>` string (see src/i18n/strings.js).
 export const MOODS = {
-  happy: { label: 'Happy', face: '😊' },
-  impatient: { label: 'Impatient', face: '😐' },
-  angry: { label: 'Angry', face: '😠' },
-  left: { label: 'Gone', face: '😤' },
+  happy: { face: '😊' },
+  impatient: { face: '😐' },
+  angry: { face: '😠' },
+  left: { face: '😤' },
 };
 
 /** How the customer stands while waiting: calm, then arms crossed, then fidgeting, then scolding. */
@@ -71,7 +73,7 @@ export class CustomerCounter {
     g.fillStyle(0x4a3527).fillRoundedRect(-SIGN_W / 2, -SIGN_H / 2, SIGN_W, SIGN_H, 10);
     g.lineStyle(3, COLORS.woodEdge).strokeRoundedRect(-SIGN_W / 2, -SIGN_H / 2, SIGN_W, SIGN_H, 10);
     const shown = Math.min(customerIndex + 1, total);
-    const title = new Phaser.GameObjects.Text(scene, 0, -11, `Chapter ${levelIndex + 1} · ${shown}/${total}`, textStyle(14, 700, COLORS.chalk)).setOrigin(0.5);
+    const title = new Phaser.GameObjects.Text(scene, 0, -11, t('sign.progress', { n: levelIndex + 1, shown, total }), textStyle(14, 700, COLORS.chalk)).setOrigin(0.5);
     const stars = [];
     for (let i = 0; i < total; i++) {
       const result = results[i];
@@ -172,7 +174,7 @@ export class CustomerCounter {
     if (mood === this.mood || mood === 'left') return;
     const wasHappier = this.mood !== null;
     this.mood = mood;
-    this.barLabel.setText(MOODS[mood].label);
+    this.barLabel.setText(t(`mood.${mood}`));
     if (wasHappier && this.customer) {
       // A little huff when they get grumpier.
       const customer = this.customer;
@@ -201,7 +203,7 @@ export class CustomerCounter {
     }
     order.forEach((id, i) => this.slots.set(id, pieces[i]));
 
-    const head = new Phaser.GameObjects.Text(scene, 0, 0, order.length > 1 ? "I'd like both:" : "I'd like:", textStyle(13, 600, COLORS.inkSoft)).setOrigin(0, 0.5);
+    const head = new Phaser.GameObjects.Text(scene, 0, 0, t(order.length > 1 ? 'bubble.both' : 'bubble.one'), textStyle(13, 600, COLORS.inkSoft)).setOrigin(0, 0.5);
     const lineH = stacked ? 36 : 42;
     const contentW = stacked ? Math.max(...pieces.map((p) => p.width)) : rowW;
     const w = Math.min(Math.max(contentW, head.width) + PAD_X * 2, maxW);

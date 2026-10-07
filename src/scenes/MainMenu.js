@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import { drawKitchen, drawPlank } from '../ui/KitchenBackdrop.js';
 import { COLORS, textStyle } from '../ui/theme.js';
 import { startMusic } from '../audio/Music.js';
+import { makeLangToggle } from '../ui/LangToggle.js';
+import { t } from '../i18n/lang.js';
 
 export class MainMenu extends Phaser.Scene {
   constructor() {
@@ -22,16 +24,22 @@ export class MainMenu extends Phaser.Scene {
 
     const touch = this.sys.game.device.input.touch;
     const prompt = this.add
-      .text(board.x, board.y, touch ? 'Tap to start' : 'Click or press SPACE to start', {
-        ...textStyle(Math.round(24 * Math.max(0.8, board.scale)), 500, COLORS.chalk),
-        align: 'center',
-        wordWrap: { width: board.width * 0.9 },
-      })
+      .text(
+        board.x,
+        board.y,
+        t(touch ? 'menu.start.touch' : 'menu.start.mouse'),
+        textStyle(Math.round(24 * Math.max(0.8, board.scale)), 500, COLORS.chalk, { align: 'center', wordWrap: { width: board.width * 0.9 } }),
+      )
       .setOrigin(0.5);
     this.tweens.add({ targets: prompt, alpha: 0.4, duration: 800, yoyo: true, repeat: -1 });
 
+    makeLangToggle(this, width - 62, 34);
+
+    // Any tap starts, except on a button (the language switch).
     const start = () => this.scene.start('ChapterSelect');
-    this.input.once('pointerdown', start);
+    this.input.on('pointerdown', (_pointer, over) => {
+      if (!over.length) start();
+    });
     this.input.keyboard.once('keydown-SPACE', start);
 
     // Redraw for the new size when the window resizes or the device rotates.

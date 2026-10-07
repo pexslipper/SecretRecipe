@@ -5,6 +5,7 @@ import { makeRecipeStep, CENSOR_COLOR } from './RecipeStep.js';
 import { PointerGesture } from './PointerGesture.js';
 import { KineticScroller, attachScroller } from './KineticScroller.js';
 import { CHAPTERS } from '../data/chapters.js';
+import { t, cuisineName } from '../i18n/lang.js';
 
 const MAX_PANEL_W = 820;
 const MAX_PANEL_H = 600;
@@ -107,7 +108,7 @@ export class CookbookModal {
     covers.fillStyle(0x000000, 0.06).fillRect(coverX, this.contentTop - 3, coverW, 3);
 
     this.add(this.scene.add.text(this.left + 30, this.top + HEADER_H / 2 + 4, '📖', { fontSize: 34, padding: { y: 6 } }).setOrigin(0, 0.5), L.chrome);
-    this.add(this.scene.add.text(this.left + 80, this.top + HEADER_H / 2 + 4, 'Recipe Book', textStyle(30, 700)).setOrigin(0, 0.5), L.chrome);
+    this.add(this.scene.add.text(this.left + 80, this.top + HEADER_H / 2 + 4, t('book.title'), textStyle(30, 700)).setOrigin(0, 0.5), L.chrome);
     const rule = this.add(this.scene.add.graphics(), L.chrome);
     rule.lineStyle(2, COLORS.woodShadow, 0.8);
     for (let dx = this.left + 32; dx < this.left + PANEL_W - 32; dx += 14) {
@@ -203,10 +204,10 @@ export class CookbookModal {
     const band = this.add(this.scene.add.graphics(), L.rows);
     band.fillStyle(chapter.color, 0.28).fillRoundedRect(x, -H / 2 + 4, w, H - 8, 12);
     band.lineStyle(2, chapter.color, 0.7).strokeRoundedRect(x, -H / 2 + 4, w, H - 8, 12);
-    const title = this.text(x + 14, `${chapter.emoji} ${chapter.name}`, textStyle(this.compact ? 20 : 22, 700));
+    const title = this.text(x + 14, `${chapter.emoji} ${cuisineName(chapter.key)}`, textStyle(this.compact ? 20 : 22, 700));
     const status = this.text(
       x + w - 14,
-      done ? '🏅 Complete!' : `${served}/${total}`,
+      done ? t('book.complete') : `${served}/${total}`,
       textStyle(this.compact ? 15 : 17, 700, done ? '#b07d00' : COLORS.ink),
     ).setOrigin(1, 0.5);
     this.rows.push({ height: H, parts: [this.part(band, H / 2), this.part(title, H / 2), this.part(status, H / 2)] });
@@ -230,7 +231,7 @@ export class CookbookModal {
       );
       const status = this.text(
         this.left + this.panelW - (this.compact ? 28 : 40),
-        served ? 'Served ✓' : `${found}/${steps.length} found`,
+        served ? t('book.served') : t('book.found', { found, total: steps.length }),
         textStyle(this.compact ? 14 : 16, 600, served ? '#5a9a3c' : COLORS.inkSoft),
       ).setOrigin(1, 0.5);
       this.rows.push({
@@ -310,6 +311,6 @@ export class CookbookModal {
     const hints = [];
     if (this.scroller.pos > 1) hints.push('▲');
     if (this.scroller.pos < this.scroller.max - 1) hints.push('▼');
-    this.moreHint.setText(hints.length ? `${hints.join(' ')}  scroll for more` : '');
+    this.moreHint.setText(hints.length ? `${hints.join(' ')}  ${t('scroll.more')}` : '');
   }
 }

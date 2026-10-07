@@ -3,12 +3,12 @@ import { RecipeEngine } from '../engine/RecipeEngine.js';
 import { buildCookbook } from '../engine/Cookbook.js';
 import { dishPool, levelUnlocks, drawOrders, patienceMs, moodAt, chapterStars, nextHintStep } from '../engine/Orders.js';
 import recipesData from '../data/recipes.json';
-import itemsData from '../data/items.json';
 import { LEVELS, CUSTOMERS_PER_LEVEL, HINTS_PER_LEVEL } from '../data/levels.js';
 import { loadSave, writeSave, WORKSPACE_REGISTRY_KEY, RUN_REGISTRY_KEY } from '../data/save.js';
 import { addPlayTime, MAX_STEP_MS } from '../engine/PlayClock.js';
 import { Sfx } from '../audio/Sfx.js';
 import { startMusic, toggleMusic, musicEnabled } from '../audio/Music.js';
+import { t, localizedItems, levelName, levelBlurb } from '../i18n/lang.js';
 import { RevealCard } from '../ui/RevealCard.js';
 import { ItemToken, TOKEN_RADIUS } from '../ui/ItemToken.js';
 import { Sidebar } from '../ui/Sidebar.js';
@@ -64,7 +64,7 @@ export class CraftingScene extends Phaser.Scene {
 
   create() {
     this.engine = new RecipeEngine(recipesData);
-    this.itemsById = new Map(itemsData.map((item) => [item.id, item]));
+    this.itemsById = new Map(localizedItems().map((item) => [item.id, item]));
     const cookbook = buildCookbook(recipesData, this.engine);
     this.cookbookEntries = cookbook;
     this.stepsByDish = new Map(cookbook.map((entry) => [entry.dishId, entry.steps]));
@@ -176,12 +176,12 @@ export class CraftingScene extends Phaser.Scene {
     const n = this.levelIndex + 1;
     const fresh = this.newUnlocks.map((id) => this.itemsById.get(id)).map((item) => `${item.emoji} ${item.name}`);
     this.reveal.enqueue({
-      banner: `CHAPTER ${n}`,
+      banner: t('intro.banner', { n }),
       bannerColor: 0xd4a017,
       icon: '🍽️',
-      title: this.level.name,
-      desc: `${this.level.blurb}. Serve ${CUSTOMERS_PER_LEVEL} customers: each one who gets their food before turning angry earns a ⭐`,
-      footer: fresh.length ? `New in storage: ${fresh.join(', ')}` : '',
+      title: levelName(this.levelIndex),
+      desc: t('intro.desc', { blurb: levelBlurb(this.levelIndex), count: CUSTOMERS_PER_LEVEL }),
+      footer: fresh.length ? t('intro.newItems', { items: fresh.join(', ') }) : '',
       onShow: () => this.sfx.play('chime'),
     });
   }
@@ -211,7 +211,7 @@ export class CraftingScene extends Phaser.Scene {
       this.sfx.play('fail');
       this.sfx.vibrate([40, 30, 40]);
       const at = this.counter.dishPoint(this.currentOrder[0]);
-      this.floatText(at.x, at.y - 30, 'Too slow! They left 😤', '#c0392b');
+      this.floatText(at.x, at.y - 30, t('customer.left'), '#c0392b');
       this.finishCustomer('left');
     }
   }
@@ -276,7 +276,7 @@ export class CraftingScene extends Phaser.Scene {
 
   /** Back to the chapter list. The chapter's customers are lost; discoveries are kept. */
   leaveChapter() {
-    if (!window.confirm('Leave this chapter? You will have to start it again.')) return;
+    if (!window.confirm(t('confirm.leave'))) return;
     this.endingRun = true;
     this.registry.remove(RUN_REGISTRY_KEY);
     this.registry.remove(WORKSPACE_REGISTRY_KEY);
@@ -292,12 +292,16 @@ export class CraftingScene extends Phaser.Scene {
     const board = drawKitchen(this, this.ws, { topOverlap: this.ws.y - counterRect.y + 8 });
     const touch = this.sys.game.device.input.touch;
     this.hint = this.add
-      .text(board.x, board.y, `${touch ? 'Tap or drag' : 'Drag'} ingredients here,\nthen drop one onto another to cook, Drag to storage to remove.`, {
-        ...textStyle(Math.round(21 * Math.max(0.75, board.scale)), 500, COLORS.chalk),
-        align: 'center',
-        lineSpacing: 6,
-        wordWrap: { width: board.width * 0.9 },
-      })
+      .text(
+        board.x,
+        board.y,
+        t(touch ? 'board.touch' : 'board.mouse'),
+        textStyle(Math.round(21 * Math.max(0.75, board.scale)), 500, COLORS.chalk, {
+          align: 'center',
+          lineSpacing: 6,
+          wordWrap: { width: board.width * 0.9 },
+        }),
+      )
       .setOrigin(0.5)
       .setAlpha(0.92);
 
@@ -315,10 +319,10 @@ export class CraftingScene extends Phaser.Scene {
     const midY = hudRect.y + hudRect.h / 2;
     const hud = [drawPlank(this, hudRect.x, hudRect.y, hudRect.w - 2, hudRect.h)];
     // Recipes ribbon doubles as the Recipe Book's counter: dishes served so far / all dishes.
-    this.recipesButton = makeRibbonButton(this, hudRect.x + 14, midY - 28, 'Recipes', () => this.cookbook.open());
+    this.recipesButton = makeRibbonButton(this, hudRect.x + 14, midY - 28, '', () => this.cookbook.open());
     hud.push(this.recipesButton);
     // Hint: uncovers one hidden step of the current order. A few per chapter, no refills.
-    this.hintButton = makeRoundButton(this, 0, midY + 2, 32, 'Hint', {
+    this.hintButton = makeRoundButton(this, 0, midY + 2, 32, t('hud.hint'), {
       color: 0xf2c44f,
       darkColor: 0xc9952e,
       onClick: () => this.useHint(),
@@ -351,14 +355,14 @@ export class CraftingScene extends Phaser.Scene {
     this.setMuteLabel(this.sfx.muted);
     hud.push(this.muteButton);
     hud.push(
-      makeRoundButton(this, right - 132, midY + 2, 34, 'Menu', {
+      makeRoundButton(this, right - 132, midY + 2, 34, t('hud.menu'), {
         color: 0x72bdbd,
         darkColor: 0x4f9799,
         onClick: () => this.leaveChapter(),
       }),
     );
     hud.push(
-      makeRoundButton(this, right - 52, midY + 2, 34, 'Clear', {
+      makeRoundButton(this, right - 52, midY + 2, 34, t('hud.clear'), {
         color: 0xec7d7e,
         darkColor: 0xc65a5c,
         onClick: () => this.clearWorkspace(),
@@ -427,7 +431,7 @@ export class CraftingScene extends Phaser.Scene {
 
   updateHud() {
     const found = [...this.dishIds].filter((id) => this.servedDishes.has(id)).length;
-    this.recipesButton.setLabel(`Recipes ${found}/${this.dishIds.size}`);
+    this.recipesButton.setLabel(t('hud.recipes', { found, total: this.dishIds.size }));
     this.hintButton.setX(this.recipesButton.x + this.recipesButton.ribbonWidth + 42);
     this.hint.setVisible(this.workspaceTokens.size === 0);
   }
@@ -470,19 +474,19 @@ export class CraftingScene extends Phaser.Scene {
     };
 
     if (!this.customerActive) {
-      say('Wait for a customer!');
+      say(t('hint.wait'));
       return;
     }
     const toServe = this.currentOrder.filter((id) => !this.run.served.includes(id));
     const revealed = new Set(this.run.revealed);
     const stepId = nextHintStep(toServe, this.stepsByDish, (id) => this.discoveredRecipes.has(id), revealed);
     if (!stepId) {
-      say('You already know this recipe!');
+      say(t('hint.known'));
       shake();
       return;
     }
     if (this.run.hintsLeft <= 0) {
-      say('No hints left this chapter');
+      say(t('hint.none'));
       shake();
       return;
     }
@@ -680,7 +684,7 @@ export class CraftingScene extends Phaser.Scene {
       this.sfx.vibrate(25);
       if (isNew) {
         this.reveal.enqueue({
-          banner: 'NEW!',
+          banner: t('reveal.new'),
           bannerColor: 0x3f86c4,
           item: this.itemsById.get(result.output),
           onShow: () => this.sfx.play('chime'),
@@ -717,7 +721,7 @@ export class CraftingScene extends Phaser.Scene {
 
     const joke = item.type === 'joke';
     this.reveal.enqueue({
-      banner: joke ? 'OOPS!' : 'NEW DISH!',
+      banner: t(joke ? 'reveal.oops' : 'reveal.newDish'),
       bannerColor: joke ? 0x9b6fd0 : 0xe0912f,
       item,
       // Draw the eye to the Recipe Book counter that just went up.
@@ -747,7 +751,7 @@ export class CraftingScene extends Phaser.Scene {
     this.sfx.play('success');
     this.time.delayedCall(150, () => this.sfx.play('jingle'));
     this.sfx.vibrate([30, 40, 60]);
-    this.floatText(at.x, at.y - 70, `${item.name} served!`, '#d08a18');
+    this.floatText(at.x, at.y - 70, t('cook.served', { name: item.name }), '#d08a18');
 
     this.orderTab.markServed(item.id);
     if (this.currentOrder.every((id) => this.run.served.includes(id))) {
@@ -779,7 +783,7 @@ export class CraftingScene extends Phaser.Scene {
       this.sfx.play('success');
       this.sfx.vibrate(25);
     }
-    this.floatText(at.x, at.y - 70, joke ? `Oops! ${item.name}!` : 'Nobody ordered that!', joke ? '#8f5fc4' : '#a0522d');
+    this.floatText(at.x, at.y - 70, joke ? t('cook.oops', { name: item.name }) : t('cook.unordered'), joke ? '#8f5fc4' : '#a0522d');
   }
 
   /** Two items that don't make anything: both wiggle "no", and the dropped one bounces off to a free spot. */
@@ -801,7 +805,7 @@ export class CraftingScene extends Phaser.Scene {
     this.tweens.add({ targets: dropped, x: spot.x, y: spot.y, duration: 260, ease: 'Back.easeOut' });
     this.sfx.play('fail');
     this.sfx.vibrate(15);
-    this.floatText(target.x, target.y - 70, "Doesn't go together!", '#a0522d');
+    this.floatText(target.x, target.y - 70, t('cook.fail'), '#a0522d');
   }
 
   /**

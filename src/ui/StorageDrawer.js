@@ -1,5 +1,6 @@
 import { drawPlank } from './KitchenBackdrop.js';
 import { COLORS, textStyle } from './theme.js';
+import { t } from '../i18n/lang.js';
 import { SECTION_H, TOOL_ROW_H, SHELF_ROW_H, DRAWER_HEADER_H } from './layout.js';
 import { PointerGesture } from './PointerGesture.js';
 import { KineticScroller, attachScroller } from './KineticScroller.js';
@@ -64,7 +65,7 @@ export class StorageDrawer {
     drawPosts(scene, rect, depth + L.posts, POST_W);
     drawPlank(scene, rect.x, rect.y, rect.w, DRAWER_HEADER_H, { roundBottom: false }).setDepth(depth + L.back);
     scene.add
-      .text(rect.x + rect.w / 2, rect.y + DRAWER_HEADER_H / 2 - 2, 'My Kitchen Storage!', textStyle(24, 700))
+      .text(rect.x + rect.w / 2, rect.y + DRAWER_HEADER_H / 2 - 2, t('storage.title'), textStyle(24, 700))
       .setOrigin(0.5)
       .setDepth(depth + L.back);
   }
@@ -129,7 +130,7 @@ export class StorageDrawer {
       const header = makeSectionHeader(this.scene, {
         x: this.innerLeft,
         w: this.innerWidth,
-        text: `${section.label} (${sectionItems.length})`,
+        text: `${t(section.label)} (${sectionItems.length})`,
         depth: this.depth + L.back,
         toggle: section.pinned ? { open: this.toolsOpen, onToggle: () => this.toggleTools() } : null,
       });
@@ -163,7 +164,7 @@ export class StorageDrawer {
       if (!sectionItems.length) {
         track(
           this.scene.add
-            .text(this.innerLeft + this.innerWidth / 2, y + ICON_Y, section.empty, textStyle(15, 500, COLORS.inkSoft))
+            .text(this.innerLeft + this.innerWidth / 2, y + ICON_Y, t(section.empty), textStyle(15, 500, COLORS.inkSoft))
             .setOrigin(0.5)
             .setDepth(this.depth + L.items),
         );

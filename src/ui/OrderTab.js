@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { COLORS, textStyle } from './theme.js';
 import { makeItemLabel } from './ItemLabel.js';
 import { makeRecipeStep, CENSOR_COLOR } from './RecipeStep.js';
+import { t } from '../i18n/lang.js';
 
 const PAD = 10;
 const HEADER_H = 30;
@@ -107,7 +108,7 @@ export class OrderTab {
       colH += row.h;
     }
     const colW = columns.map((col) => Math.max(0, ...col.map((r) => (r.indent ?? 0) + r.obj.width + (r.check ? 26 : 0) + (r.hinted ? 24 : 0))));
-    const header = new Phaser.GameObjects.Text(scene, 0, 0, `📋 Recipe ${this.collapsed ? '▼' : '▲'}`, textStyle(15, 700, '#8a5a00')).setOrigin(0, 0.5);
+    const header = new Phaser.GameObjects.Text(scene, 0, 0, `${t('order.title')} ${this.collapsed ? '▼' : '▲'}`, textStyle(15, 700, '#8a5a00')).setOrigin(0, 0.5);
     const contentW = Math.max(header.width, colW.reduce((a, b) => a + b, 0) + COL_GAP * (columns.length - 1));
     const contentH = Math.max(0, ...columns.map((col) => col.reduce((sum, r) => sum + r.h, 0)));
     const w = contentW + PAD * 2;

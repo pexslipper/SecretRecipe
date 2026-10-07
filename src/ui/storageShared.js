@@ -3,6 +3,7 @@ import { ItemToken } from './ItemToken.js';
 import { COLORS, textStyle } from './theme.js';
 import { REUSABLE_TYPES } from '../data/start.js';
 import { SECTION_H } from './layout.js';
+import { t } from '../i18n/lang.js';
 
 const TOOLS_OPEN_KEY = 'secret-recipe-tools-open';
 
@@ -10,17 +11,18 @@ const isRaw = (item) => item.type === 'base_ingredient';
 
 // Storage only holds what you start a chapter with; anything cooked lives on the table.
 // The `pinned` section is Tools: it never scrolls away and can be opened/closed.
-// `empty` is shown on an empty shelf (in practice never: every chapter stocks both).
+// `label` and `empty` are string keys (src/i18n/strings.js); `empty` is shown on an empty shelf
+// (in practice never: every chapter stocks both).
 export const SECTIONS = [
   {
     key: 'tools',
-    label: 'Tools',
+    label: 'storage.tools',
     style: 'pegboard',
     pinned: true,
-    empty: 'No tools yet!',
+    empty: 'storage.toolsEmpty',
     filter: (item) => REUSABLE_TYPES.has(item.type),
   },
-  { key: 'raw', label: 'Raw Ingredients', style: 'shelf', empty: 'Nothing here yet!', filter: (item) => isRaw(item) },
+  { key: 'raw', label: 'storage.raw', style: 'shelf', empty: 'storage.rawEmpty', filter: (item) => isRaw(item) },
 ];
 
 /** True for items the storage keeps: raw ingredients and tools. */
@@ -77,7 +79,7 @@ export function makeSectionHeader(scene, { x, w, text, depth, toggle = null }) {
 
   if (toggle) {
     const hint = add(
-      scene.add.text(x + w - 8, 0, toggle.open ? 'hide' : 'show', textStyle(13, 600, COLORS.inkSoft)).setOrigin(1, 0.5),
+      scene.add.text(x + w - 8, 0, t(toggle.open ? 'storage.hide' : 'storage.show'), textStyle(13, 600, COLORS.inkSoft)).setOrigin(1, 0.5),
     );
     const hit = add(scene.add.zone(x, 0, w, SECTION_H).setOrigin(0));
     hit.setInteractive({ useHandCursor: true });
@@ -149,7 +151,7 @@ function fillPosts(g, { x, y, w, h }, postW) {
 export function flashNew(scene, token, depth) {
   scene.tweens.add({ targets: token, scale: 1.2, duration: 160, yoyo: true, repeat: 1, ease: 'Sine.easeInOut' });
   const badge = scene.add
-    .text(token.x + 26, token.y - 30, 'NEW!', {
+    .text(token.x + 26, token.y - 30, t('storage.new'), {
       ...textStyle(13, 700, '#ffffff'),
       backgroundColor: '#dd5a50',
       padding: { x: 6, y: 3 },
