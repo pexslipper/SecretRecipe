@@ -16,6 +16,7 @@ const STAR_MOODS = new Set(['happy', 'impatient']);
 export function dishPool(level, cookbook, itemsById) {
   return cookbook
     .filter(({ dishId }) => itemsById.get(dishId)?.type === 'final_dish')
+    .filter(({ steps }) => steps.length >= (level.minSteps ?? 1))
     .filter(({ steps }) => level.maxSteps === null || steps.length <= level.maxSteps)
     .map(({ dishId }) => dishId);
 }

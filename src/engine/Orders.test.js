@@ -31,14 +31,15 @@ function seeded(seed) {
 }
 
 describe('dishPool', () => {
-  it('grows with each chapter: 9 / 15 / 23 / 27 / 29 / 29 dishes', () => {
-    expect(LEVELS.map((l) => dishPool(l, cookbook, itemsById).length)).toEqual([9, 15, 23, 27, 29, 29]);
+  it('grows with each chapter, then drops the short dishes: 9 / 15 / 23 / 27 / 20 / 20 dishes', () => {
+    expect(LEVELS.map((l) => dishPool(l, cookbook, itemsById).length)).toEqual([9, 15, 23, 27, 20, 20]);
   });
 
-  it('never offers jokes, and respects the step limit', () => {
+  it('never offers jokes, and respects the step limits', () => {
     for (const level of LEVELS) {
       for (const id of dishPool(level, cookbook, itemsById)) {
         expect(itemsById.get(id).type).toBe('final_dish');
+        expect(stepsByDish.get(id).length).toBeGreaterThanOrEqual(level.minSteps ?? 1);
         if (level.maxSteps !== null) expect(stepsByDish.get(id).length).toBeLessThanOrEqual(level.maxSteps);
       }
     }
