@@ -6,7 +6,8 @@ import { Boot } from './scenes/Boot.js';
 import { Preloader } from './scenes/Preloader.js';
 import { MainMenu } from './scenes/MainMenu.js';
 import { CraftingScene } from './scenes/CraftingScene.js';
-import { Congrats } from './scenes/Congrats.js';
+import { ChapterSelect } from './scenes/ChapterSelect.js';
+import { ChapterResult } from './scenes/ChapterResult.js';
 import { gameSizeFor } from './ui/layout.js';
 
 const container = document.getElementById('game-container');
@@ -36,7 +37,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [Boot, Preloader, MainMenu, CraftingScene, Congrats],
+  scene: [Boot, Preloader, MainMenu, ChapterSelect, CraftingScene, ChapterResult],
 };
 
 const game = new Phaser.Game(config);

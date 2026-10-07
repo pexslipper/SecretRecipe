@@ -23,14 +23,19 @@ describe('computeLayout', () => {
       });
 
       it('keeps every area on screen without overlapping', () => {
-        for (const r of [l.hud, l.workspace, l.storage.rect]) expect(inside(r, l.width, l.height)).toBe(true);
-        expect(overlaps(l.workspace, l.storage.rect)).toBe(false);
-        expect(overlaps(l.hud, l.workspace)).toBe(false);
-        expect(overlaps(l.hud, l.storage.rect)).toBe(false);
+        const areas = [l.hud, l.counter, l.workspace, l.storage.rect];
+        for (const r of areas) expect(inside(r, l.width, l.height)).toBe(true);
+        areas.forEach((a, i) => areas.slice(i + 1).forEach((b) => expect(overlaps(a, b)).toBe(false)));
       });
 
-      it('gives the workspace at least 40% of the screen', () => {
-        expect((l.workspace.w * l.workspace.h) / (l.width * l.height)).toBeGreaterThanOrEqual(0.4);
+      it('puts the counter right on top of the table, the same width', () => {
+        expect(l.counter.y + l.counter.h).toBe(l.workspace.y);
+        expect(l.counter.x).toBe(l.workspace.x);
+        expect(l.counter.w).toBe(l.workspace.w);
+      });
+
+      it('gives the table at least a third of the screen', () => {
+        expect((l.workspace.w * l.workspace.h) / (l.width * l.height)).toBeGreaterThanOrEqual(0.33);
       });
 
       it('matches the viewport shape (no letterboxing for common devices)', () => {

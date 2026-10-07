@@ -33,9 +33,7 @@ const L = { back: 0, items: 1, posts: 2, arrows: 3, overlay: 4 };
  * changes the drawer's height, so the scene lays itself out again (`onToggleTools`).
  */
 export class StorageDrawer {
-  constructor(scene, { rect, itemsById, depth, onPick, onTap, onToggleTools, interceptPress }) {
-    // Lets the scene take over a press on an item (hint mode) before it becomes a drag/tap.
-    this.interceptPress = interceptPress;
+  constructor(scene, { rect, itemsById, depth, onPick, onTap, onToggleTools }) {
     this.scene = scene;
     this.rect = rect;
     this.itemsById = itemsById;
@@ -112,10 +110,7 @@ export class StorageDrawer {
       const item = this.itemsById.get(id);
       if (!item) continue;
       const token = makeShelfToken(this.scene, item, this.depth + L.items);
-      token.hit.on('pointerdown', (pointer) => {
-        if (this.interceptPress?.(id)) return;
-        this.press(pointer, id, this.strips.find((s) => s.ids.includes(id)));
-      });
+      token.hit.on('pointerdown', (pointer) => this.press(pointer, id, this.strips.find((s) => s.ids.includes(id))));
       this.entries.set(id, token);
     }
 

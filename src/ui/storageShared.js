@@ -9,17 +9,17 @@ const TOOLS_OPEN_KEY = 'secret-recipe-tools-open';
 const isRaw = (item) => item.type === 'base_ingredient';
 
 // The `pinned` section is Tools: it never scrolls away and can be opened/closed.
-// `empty` is shown on an empty shelf: Processed starts empty, the others only empty once everything is used up.
+// `empty` is shown on an empty shelf: Processed starts empty; the others always hold the chapter's starting items.
 export const SECTIONS = [
   {
     key: 'tools',
     label: 'Tools',
     style: 'pegboard',
     pinned: true,
-    empty: 'Every tool has done its job!',
+    empty: 'No tools yet!',
     filter: (item) => REUSABLE_TYPES.has(item.type),
   },
-  { key: 'raw', label: 'Raw Ingredients', style: 'shelf', empty: 'All used up!', filter: (item) => isRaw(item) },
+  { key: 'raw', label: 'Raw Ingredients', style: 'shelf', empty: 'Nothing here yet!', filter: (item) => isRaw(item) },
   {
     key: 'processed',
     label: 'Processed Ingredients',

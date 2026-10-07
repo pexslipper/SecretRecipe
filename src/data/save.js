@@ -1,10 +1,12 @@
-// Saved progress: one JSON blob in localStorage, plus a couple of per-session flags in the game registry.
+// Saved progress: one JSON blob in localStorage, plus per-session state in the game registry.
+// The blob: { unlocked, served, recipes, levels: { [chapterIndex]: bestStars }, playMs }.
 const SAVE_KEY = 'secret-recipe-save-v1';
 
 // Items on the table, kept across scene restarts (resize / rotation) but not page reloads.
 export const WORKSPACE_REGISTRY_KEY = 'workspace-tokens';
-// Set once the player has seen the congratulations page this session, so the kitchen doesn't keep sending them back.
-export const CONGRATS_SEEN_KEY = 'congrats-seen';
+// The chapter being played (customers, timers, hints), kept across scene restarts (resize /
+// rotation) but not page reloads: leaving a chapter means starting it over.
+export const RUN_REGISTRY_KEY = 'chapter-run';
 
 /** The saved progress, or null when there is none (or storage is unavailable / corrupt). */
 export function loadSave() {
@@ -23,7 +25,7 @@ export function writeSave(data) {
   }
 }
 
-/** Wipes saved progress and the session flags: the next kitchen starts a brand-new game. */
+/** Wipes saved progress and the session state: the next kitchen starts a brand-new game. */
 export function resetGame(registry) {
   try {
     localStorage.removeItem(SAVE_KEY);
@@ -31,5 +33,5 @@ export function resetGame(registry) {
     // Ignore.
   }
   registry.remove(WORKSPACE_REGISTRY_KEY);
-  registry.remove(CONGRATS_SEEN_KEY);
+  registry.remove(RUN_REGISTRY_KEY);
 }

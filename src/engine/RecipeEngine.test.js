@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { RecipeEngine } from './RecipeEngine.js';
 import recipes from '../data/recipes.json';
 import items from '../data/items.json';
-import { STARTING_ITEMS, UNLOCKS } from '../data/unlocks.js';
+import { buildCookbook } from './Cookbook.js';
+import { levelUnlocks, dishPool } from './Orders.js';
+import { LEVELS } from '../data/levels.js';
 import { CHAPTERS_BY_KEY } from '../data/chapters.js';
 
 const engine = new RecipeEngine(recipes);
@@ -57,29 +59,37 @@ describe('data integrity', () => {
         expect(itemIds.has(id), `${r.id} references unknown item ${id}`).toBe(true);
       }
     }
-    STARTING_ITEMS.forEach((id) => expect(itemIds.has(id)).toBe(true));
   });
 
-  it('every recipe is reachable from the starting set plus milestone unlocks', () => {
-    const unlocked = new Set([...STARTING_ITEMS, ...UNLOCKS.map((u) => u.item)]);
+  /** Everything that can be made from `start`, following recipes until nothing new appears. */
+  const reachableFrom = (start) => {
+    const have = new Set(start);
     let changed = true;
     while (changed) {
       changed = false;
       for (const r of recipes) {
-        if (r.inputs.every((id) => unlocked.has(id)) && !unlocked.has(r.output)) {
-          unlocked.add(r.output);
+        if (r.inputs.every((id) => have.has(id)) && !have.has(r.output)) {
+          have.add(r.output);
           changed = true;
         }
       }
     }
-    const unreachable = recipes.filter((r) => !unlocked.has(r.output)).map((r) => r.id);
+    return have;
+  };
+  const cookbook = buildCookbook(recipes, engine);
+  const itemsById = new Map(items.map((i) => [i.id, i]));
+
+  it('every recipe is reachable once the last chapter has unlocked everything', () => {
+    const have = reachableFrom(levelUnlocks(LEVELS.length - 1, cookbook, itemsById));
+    const unreachable = recipes.filter((r) => !have.has(r.output)).map((r) => r.id);
     expect(unreachable).toEqual([]);
   });
 
-  it('early game: plenty to discover straight from the starting items', () => {
-    const start = new Set(STARTING_ITEMS);
-    const firstStep = recipes.filter((r) => r.inputs.every((id) => start.has(id)));
-    expect(firstStep.length).toBeGreaterThanOrEqual(8);
+  it("every chapter's dishes can be cooked from what that chapter unlocks", () => {
+    LEVELS.forEach((level, i) => {
+      const have = reachableFrom(levelUnlocks(i, cookbook, itemsById));
+      for (const dishId of dishPool(level, cookbook, itemsById)) expect(have.has(dishId), `chapter ${i + 1}: ${dishId}`).toBe(true);
+    });
   });
 
   it('no two recipes use the same pair of inputs', () => {

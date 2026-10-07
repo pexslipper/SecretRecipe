@@ -27,18 +27,17 @@ function loadMuted() {
 
 /**
  * Plays the game's sound effects and phone vibrations. File sounds that weren't found are skipped
- * silently; the rest are tiny WebAudio synth sounds. Muting also turns vibration off.
+ * silently; the rest are tiny WebAudio synth sounds. Muting also turns vibration off, but leaves the
+ * background music alone (that has its own switch, see Music.js).
  */
 export class Sfx {
   constructor(scene) {
     this.scene = scene;
     this.muted = loadMuted();
-    scene.sound.mute = this.muted;
   }
 
   toggleMute() {
     this.muted = !this.muted;
-    this.scene.sound.mute = this.muted;
     try {
       localStorage.setItem(MUTE_KEY, this.muted ? '1' : '0');
     } catch {

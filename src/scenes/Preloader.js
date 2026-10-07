@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { SOUND_FILES, SOUND_EXTENSIONS } from '../audio/Sfx.js';
 import { ITEM_ATLAS } from '../ui/ItemToken.js';
+import { CUSTOMER_TEXTURE, CUSTOMER_FILE, addCustomerFrames } from '../ui/CustomerSprites.js';
+import { MUSIC_KEY, MUSIC_FILE } from '../audio/Music.js';
 
 // Sound files can sit in public/assets/sounds/ or straight in public/assets/.
 const SOUND_FOLDERS = ['sounds/', ''];
@@ -44,9 +46,14 @@ export class Preloader extends Phaser.Scene {
     // Item icons: one sprite sheet, with a frame per `icon` field in src/data/items.json.
     // items.json is generated from items.png by `npm run atlas`; re-run it whenever the sheet changes.
     this.load.atlas(ITEM_ATLAS, 'items.png', 'items.json');
+    // Customers: one sheet, cut into a frame per character and pose (see CustomerSprites.js).
+    this.load.image(CUSTOMER_TEXTURE, CUSTOMER_FILE);
+    this.load.audio(MUSIC_KEY, MUSIC_FILE);
   }
 
   async create() {
+    addCustomerFrames(this.textures.get(CUSTOMER_TEXTURE));
+
     // Sound effects are optional: load whichever ones are in public/assets/sounds/.
     const found = await Promise.all(SOUND_FILES.map(async (name) => [name, await findSound(name)]));
     const files = found.filter(([, url]) => url);

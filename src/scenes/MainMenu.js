@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { drawKitchen, drawPlank } from '../ui/KitchenBackdrop.js';
 import { COLORS, textStyle } from '../ui/theme.js';
+import { startMusic } from '../audio/Music.js';
 
 export class MainMenu extends Phaser.Scene {
   constructor() {
@@ -9,6 +10,7 @@ export class MainMenu extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+    startMusic(this);
 
     // Same kitchen as the game, filling the whole screen.
     const board = drawKitchen(this, { x: 0, y: 0, w: width, h: height }, { topOverlap: 0 });
@@ -28,7 +30,7 @@ export class MainMenu extends Phaser.Scene {
       .setOrigin(0.5);
     this.tweens.add({ targets: prompt, alpha: 0.4, duration: 800, yoyo: true, repeat: -1 });
 
-    const start = () => this.scene.start('CraftingScene');
+    const start = () => this.scene.start('ChapterSelect');
     this.input.once('pointerdown', start);
     this.input.keyboard.once('keydown-SPACE', start);
 

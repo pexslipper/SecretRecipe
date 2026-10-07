@@ -6,6 +6,10 @@
 export const HUD_H = 64;
 export const PORTRAIT_HUD_H = 72;
 export const COLUMN_W = 322;
+// Band across the top of the table where customers stand behind the counter.
+export const COUNTER_H = 170;
+export const COMPACT_COUNTER_H = 136;
+export const PORTRAIT_COUNTER_H = 150;
 
 // Shared row metrics for the storage UIs.
 export const SECTION_H = 32;
@@ -29,7 +33,7 @@ export function drawerHeight(toolsOpen = true) {
 /**
  * @param {number} viewportW CSS px available to the game
  * @param {number} viewportH
- * @returns {{ width, height, orientation, hud, workspace, storage: { kind, rect } }}
+ * @returns {{ width, height, orientation, hud, counter, workspace, storage: { kind, rect } }}
  *   Rects are `{ x, y, w, h }` in game coordinates.
  */
 export function computeLayout(viewportW, viewportH, opts) {
@@ -50,27 +54,32 @@ export function gameSizeFor(viewportW, viewportH) {
   return { width, height: Math.round(clamp(width / aspect, width * 1.3, width * 2.3)) };
 }
 
-/** Splits a game size into HUD, workspace and storage areas. */
+/** Splits a game size into HUD, customer counter, workspace (the table) and storage areas. */
 export function layoutFor(width, height, { toolsOpen = true } = {}) {
   if (width >= height) {
     const left = width - COLUMN_W;
+    const counterH = height < 720 ? COMPACT_COUNTER_H : COUNTER_H;
+    const top = HUD_H + counterH;
     return {
       width,
       height,
       orientation: 'landscape',
       hud: { x: 0, y: 0, w: left, h: HUD_H },
-      workspace: { x: 0, y: HUD_H, w: left, h: height - HUD_H },
+      counter: { x: 0, y: HUD_H, w: left, h: counterH },
+      workspace: { x: 0, y: top, w: left, h: height - top },
       storage: { kind: 'column', rect: { x: left, y: 0, w: COLUMN_W, h: height } },
     };
   }
 
   const drawerH = drawerHeight(toolsOpen);
+  const top = PORTRAIT_HUD_H + PORTRAIT_COUNTER_H;
   return {
     width,
     height,
     orientation: 'portrait',
     hud: { x: 0, y: 0, w: width, h: PORTRAIT_HUD_H },
-    workspace: { x: 0, y: PORTRAIT_HUD_H, w: width, h: height - PORTRAIT_HUD_H - drawerH },
+    counter: { x: 0, y: PORTRAIT_HUD_H, w: width, h: PORTRAIT_COUNTER_H },
+    workspace: { x: 0, y: top, w: width, h: height - top - drawerH },
     storage: { kind: 'drawer', rect: { x: 0, y: height - drawerH, w: width, h: drawerH } },
   };
 }

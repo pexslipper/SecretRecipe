@@ -44,9 +44,7 @@ const L = {
  * out, or tap it to drop a copy on the table.
  */
 export class Sidebar {
-  constructor(scene, { rect, itemsById, depth, onPick, onTap, interceptPress }) {
-    // Lets the scene take over a press on an item (hint mode) before it becomes a drag/tap.
-    this.interceptPress = interceptPress;
+  constructor(scene, { rect, itemsById, depth, onPick, onTap }) {
     this.scene = scene;
     this.x = rect.x;
     this.y = rect.y;
@@ -126,9 +124,7 @@ export class Sidebar {
       const item = this.itemsById.get(id);
       if (!item) continue;
       const token = makeShelfToken(this.scene, item, this.depth + L.scrollItems);
-      token.hit.on('pointerdown', (pointer) => {
-        if (!this.interceptPress?.(id)) this.press(pointer, id);
-      });
+      token.hit.on('pointerdown', (pointer) => this.press(pointer, id));
       this.entries.set(id, token);
     }
 
