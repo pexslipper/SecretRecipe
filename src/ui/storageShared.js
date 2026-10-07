@@ -8,8 +8,9 @@ const TOOLS_OPEN_KEY = 'secret-recipe-tools-open';
 
 const isRaw = (item) => item.type === 'base_ingredient';
 
+// Storage only holds what you start a chapter with; anything cooked lives on the table.
 // The `pinned` section is Tools: it never scrolls away and can be opened/closed.
-// `empty` is shown on an empty shelf: Processed starts empty; the others always hold the chapter's starting items.
+// `empty` is shown on an empty shelf (in practice never: every chapter stocks both).
 export const SECTIONS = [
   {
     key: 'tools',
@@ -20,14 +21,12 @@ export const SECTIONS = [
     filter: (item) => REUSABLE_TYPES.has(item.type),
   },
   { key: 'raw', label: 'Raw Ingredients', style: 'shelf', empty: 'Nothing here yet!', filter: (item) => isRaw(item) },
-  {
-    key: 'processed',
-    label: 'Processed Ingredients',
-    style: 'shelf',
-    empty: 'Cook something to fill this shelf!',
-    filter: (item) => !REUSABLE_TYPES.has(item.type) && !isRaw(item),
-  },
 ];
+
+/** True for items the storage keeps: raw ingredients and tools. */
+export function isStorageItem(item) {
+  return !!item && SECTIONS.some((section) => section.filter(item));
+}
 
 /** Ids of `entries` that belong in `section`, sorted A→Z by name. */
 export function sectionIds(section, ids, itemsById) {

@@ -20,12 +20,12 @@ export const DRAWER_PAD_BOTTOM = 10;
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
-/** Height of the bottom drawer: title, then Tools / Raw / Processed strips (one row each). */
+/** Height of the bottom drawer: title, then Tools / Raw strips (one row each). */
 export function drawerHeight(toolsOpen = true) {
   return (
     DRAWER_HEADER_H +
     SECTION_H + (toolsOpen ? TOOL_ROW_H : 0) +
-    (SECTION_H + SHELF_ROW_H) * 2 +
+    SECTION_H + SHELF_ROW_H +
     DRAWER_PAD_BOTTOM
   );
 }

@@ -20,7 +20,7 @@ import { drawKitchen, drawPlank } from '../ui/KitchenBackdrop.js';
 import { makeRibbonButton, makeRoundButton } from '../ui/Buttons.js';
 import { COLORS, textStyle } from '../ui/theme.js';
 import { layoutFor } from '../ui/layout.js';
-import { loadToolsOpen } from '../ui/storageShared.js';
+import { loadToolsOpen, isStorageItem } from '../ui/storageShared.js';
 
 const AUTOSAVE_MS = 5000; // keeps the saved play time fresh
 const COMBINE_DISTANCE = TOKEN_RADIUS * 1.6;
@@ -386,7 +386,7 @@ export class CraftingScene extends Phaser.Scene {
       onToggleTools: () => this.relayout(),
     };
     this.storage = storage.kind === 'drawer' ? new StorageDrawer(this, storageOptions) : new Sidebar(this, storageOptions);
-    this.storage.refresh(this.unlockedIngredients);
+    this.storage.refresh(this.storageItems());
 
     this.reveal = new RevealCard(this, { depth: REVEAL_DEPTH });
 
@@ -430,6 +430,14 @@ export class CraftingScene extends Phaser.Scene {
     this.recipesButton.setLabel(`Recipes ${found}/${this.dishIds.size}`);
     this.hintButton.setX(this.recipesButton.x + this.recipesButton.ribbonWidth + 42);
     this.hint.setVisible(this.workspaceTokens.size === 0);
+  }
+
+  /**
+   * What the storage holds: the raw ingredients and tools unlocked so far. Anything cooked from
+   * them only exists on the table, so every order is cooked from scratch.
+   */
+  storageItems() {
+    return new Set([...this.unlockedIngredients].filter((id) => isStorageItem(this.itemsById.get(id))));
   }
 
   /** Tap on a storage item: drop a copy on the table near the middle, in a free spot. */
@@ -676,7 +684,6 @@ export class CraftingScene extends Phaser.Scene {
           bannerColor: 0x3f86c4,
           item: this.itemsById.get(result.output),
           onShow: () => this.sfx.play('chime'),
-          onClose: () => this.animateToIngredientTab(result.output, at),
           holdMs: 750,
         });
       }
@@ -694,28 +701,6 @@ export class CraftingScene extends Phaser.Scene {
     const token = this.spawnWorkspaceToken(itemId, at.x, at.y);
     token.setScale(0).tweenScale(1, 300, 'Back.easeOut');
     return token;
-  }
-
-  animateToIngredientTab(itemId, from) {
-    this.storage.refresh(this.unlockedIngredients);
-    const target = this.storage.revealEntry(itemId);
-
-    const ghost = new ItemToken(this, from.x, from.y, this.itemsById.get(itemId)).setDepth(FX_DEPTH);
-    ghost.setInputEnabled(false);
-    this.tweens.add({
-      targets: ghost,
-      x: target.x,
-      y: target.y,
-      scale: { from: 1.3, to: 0.8 },
-      duration: 650,
-      ease: 'Cubic.easeInOut',
-      onComplete: () => {
-        ghost.destroy();
-        this.storage.flashNew(itemId);
-      },
-    });
-
-    this.floatText(from.x, from.y - 60, `New: ${this.itemsById.get(itemId).name}!`, '#3f86c4');
   }
 
   /** A finished dish: handed to the customer if they ordered it, otherwise it pops and is gone. */
@@ -885,6 +870,8 @@ export class CraftingScene extends Phaser.Scene {
   // ---------------------------------------------------------------- Save data
 
   loadProgress() {
+    // Every item the player has: the chapters' raw ingredients and tools, plus anything they've
+    // cooked (remembered so its "NEW!" card shows only the first time; it isn't kept in storage).
     this.unlockedIngredients = new Set();
     this.servedDishes = new Set();
     this.discoveredRecipes = new Set();

@@ -27,7 +27,7 @@ const ICON_Y = 40;
 const L = { back: 0, items: 1, posts: 2, arrows: 3, overlay: 4 };
 
 /**
- * Portrait storage: a drawer along the bottom of the screen. Each section (Tools, Raw, Processed)
+ * Portrait storage: a drawer along the bottom of the screen. Each section (Tools, Raw)
  * is one shelf that scrolls sideways freely — swipe with momentum, mouse wheel, or the ‹ › arrows.
  * Pull an item up to drag it onto the table, or tap it to drop a copy there. Opening/closing Tools
  * changes the drawer's height, so the scene lays itself out again (`onToggleTools`).
