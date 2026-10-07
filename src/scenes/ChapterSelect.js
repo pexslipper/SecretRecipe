@@ -7,7 +7,8 @@ import { LEVELS, CUSTOMERS_PER_LEVEL } from '../data/levels.js';
 import { loadSave, resetGame } from '../data/save.js';
 import { isLevelOpen } from '../engine/Orders.js';
 
-const CARD_H = 132;
+const CARD_H = 176;
+const FOOTER_H = 44; // star row along the bottom of a card
 const GAP = 14;
 const PAD = 20;
 const PARCHMENT = 0xfff8ec;
@@ -103,9 +104,13 @@ export class ChapterSelect extends Phaser.Scene {
     if (name.width > w - 44) name.setScale((w - 44) / name.width);
 
     if (open) {
+      // Stars and Play sit in their own strip under the text, so a two-line blurb never runs into them.
+      const footerY = CARD_H - 8 - FOOTER_H;
+      g.lineStyle(1.5, 0xe6cfa8).lineBetween(20, footerY, w - 20, footerY);
+      const rowY = footerY + FOOTER_H / 2;
       const stars = Array.from({ length: CUSTOMERS_PER_LEVEL }, (_, s) => (s < (best ?? 0) ? '★' : '☆')).join('');
-      card.add(this.add.text(22, CARD_H - 28, stars, textStyle(22, 700, best ? '#e0a800' : '#cdbba3')).setOrigin(0, 0.5));
-      const play = this.add.text(w - 22, CARD_H - 28, best === undefined ? 'Play ▶' : 'Replay ↻', textStyle(16, 700, '#5a9a3c')).setOrigin(1, 0.5);
+      card.add(this.add.text(22, rowY, stars, textStyle(22, 700, best ? '#e0a800' : '#cdbba3')).setOrigin(0, 0.5));
+      const play = this.add.text(w - 22, rowY, best === undefined ? 'Play ▶' : 'Replay ↻', textStyle(16, 700, '#5a9a3c')).setOrigin(1, 0.5);
       card.add(play);
 
       const hit = this.add.zone(0, 0, w, CARD_H).setOrigin(0).setInteractive({ useHandCursor: true });
