@@ -126,7 +126,7 @@ export class CraftingScene extends Phaser.Scene {
     const board = drawKitchen(this, this.ws);
     const touch = this.sys.game.device.input.touch;
     this.hint = this.add
-      .text(board.x, board.y, `${touch ? 'Tap or drag' : 'Drag'} ingredients here,\nthen drop one onto another to cook`, {
+      .text(board.x, board.y, `${touch ? 'Tap or drag' : 'Drag'} ingredients here,\nthen drop one onto another to cook, Drag to storage to remove.`, {
         ...textStyle(Math.round(21 * Math.max(0.75, board.scale)), 500, COLORS.chalk),
         align: 'center',
         lineSpacing: 6,
